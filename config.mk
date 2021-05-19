@@ -8,7 +8,7 @@ RES_DIR=resource
 
 BUILD_DIR=build
 
-LIB=-lm -GL -lGLU -lGLEW -lglfw -lpng
+LIB=-lm -lGL -lGLU -lGLEW -lglfw -lpng
 
 SRC=${wildcard src/*.cpp}
 

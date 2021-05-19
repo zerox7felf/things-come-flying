@@ -3,5 +3,5 @@
 #include "engine.h"
 
 int main(int argc, char** argv) {
-	return engine_initialize();
+	return engine_start();
 }

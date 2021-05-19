@@ -8,7 +8,7 @@ prepare:
 	mkdir -p ${BUILD_DIR}
 
 compile:
-	${CC} ${FLAGS} ${O_DEBUG}
+	${CC} ${FLAGS} ${LIB} ${O_DEBUG}
 
 run:
 	./${BUILD_DIR}/${PROG}
