@@ -4,6 +4,7 @@
 #define _ENGINE_H
 
 #include "common.h"
+#include "matrix_math.h"
 
 i32 engine_initialize();
 
