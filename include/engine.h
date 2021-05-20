@@ -9,6 +9,8 @@
 typedef struct Engine {
 	i32 is_running;
 	float delta_time;
+  double mouse_x;
+  double mouse_y;
 } Engine;
 
 extern Engine engine;

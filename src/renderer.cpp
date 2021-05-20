@@ -16,6 +16,7 @@ mat4 projection;
 mat4 view;
 mat4 model;
 
+u32 basic_shader = 0;
 u32 diffuse_shader = 0;
 Model cube_model = {0};
 
@@ -188,13 +189,13 @@ i32 renderer_initialize() {
 	view = mat4d(1.0f);
 	model = mat4d(1.0f);
 
-	shader_compile_from_source(vert_source_code, frag_source_code, &diffuse_shader);
+	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
 	upload_model(&cube_model, cube_vertices, ARR_SIZE(cube_vertices));
 	return 0;
 }
 
 void render_cube(v3 position, v3 rotation, v3 size) {
-	u32 handle = diffuse_shader;
+	u32 handle = basic_shader;
 	glUseProgram(handle);
 
 	model = translate(position);
@@ -220,5 +221,7 @@ void render_cube(v3 position, v3 rotation, v3 size) {
 }
 
 void renderer_destroy() {
+	glDeleteVertexArrays(1, &cube_model.vao);
+	glDeleteVertexArrays(1, &cube_model.vbo);
 	glDeleteShader(diffuse_shader);
 }

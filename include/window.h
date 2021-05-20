@@ -23,6 +23,8 @@ void window_clear_buffers(float r, float g, float b);
 
 void window_swap_buffers();
 
+void window_get_cursor(double* x, double* y);
+
 void window_close();
 
 #endif

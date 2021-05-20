@@ -52,6 +52,8 @@ i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsyn
 	glfwMakeContextCurrent((GLFWwindow*)win.window);
 	glfwSetFramebufferSizeCallback((GLFWwindow*)win.window, framebuffer_callback);
 	glfwSwapInterval(vsync);
+	framebuffer_callback((GLFWwindow*)win.window, win.width, win.height);
+	glfwSetInputMode((GLFWwindow*)win.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	return NoError;
 }
 
@@ -103,6 +105,10 @@ void window_clear_buffers(float r, float g, float b) {
 
 void window_swap_buffers() {
 	glfwSwapBuffers((GLFWwindow*)win.window);
+}
+
+void window_get_cursor(double* x, double* y) {
+	glfwGetCursorPos((GLFWwindow*)win.window, x, y);
 }
 
 void window_close() {

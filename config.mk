@@ -18,4 +18,4 @@ FLAGS=${SRC} -o ${BUILD_DIR}/${PROG} -I${INC}
 
 O_DEBUG=-Og
 
-O_RELEASE=-ffast-math -O2
+O_RELEASE=-ffast-math -O3

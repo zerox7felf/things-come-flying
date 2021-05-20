@@ -23,6 +23,16 @@ typedef union mat4 {
 #endif
 } mat4;
 
+inline v3 operator+(v3 a, v3 b) {
+  v3 result = a;
+
+  result.x += b.x;
+  result.y += b.y;
+  result.z += b.z;
+
+  return result;
+}
+
 inline mat4 mat4d(float diagonal);
 
 inline mat4 translate(v3 t);
