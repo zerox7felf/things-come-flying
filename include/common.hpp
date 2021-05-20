@@ -1,7 +1,7 @@
-// common.h
+// common.hpp
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _COMMON_HPP
+#define _COMMON_HPP
 
 #include <stdint.h>
 #include <assert.h>
@@ -25,29 +25,29 @@ typedef float r32;
 typedef double r64;
 
 typedef union v3 {
-  struct {
-    float x, y, z;
-  };
-  struct {
-    float r, g, b;
-  };
+	struct {
+		float x, y, z;
+	};
+	struct {
+		float r, g, b;
+	};
 } v3;
 
 typedef union v2 {
-  struct {
-    float x, y;
-  };
-  struct {
-    float w, h;
-  };
+	struct {
+		float x, y;
+	};
+	struct {
+		float w, h;
+	};
 } v2;
 
 #define V2(X, Y) ((v2) {{.x = X, .y = Y, }})
 #define V3(X, Y, Z) ((v3) {{ .x = X, .y = Y, .z = Z, }})
 
 typedef enum Status_code {
-  NoError = 0,
-  Error = -1,
+	NoError = 0,
+	Error = -1,
 } Status_code;
 
 #endif

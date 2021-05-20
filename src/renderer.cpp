@@ -9,8 +9,8 @@
 	#include <GL/gl.h>
 #endif
 
-#include "common.h"
-#include "renderer.h"
+#include "common.hpp"
+#include "renderer.hpp"
 
 mat4 projection;
 mat4 view;
@@ -200,7 +200,9 @@ void render_cube(v3 position, v3 rotation, v3 size) {
 
 	model = translate(position);
 
-	// TODO(lucas): Handle rotations
+	model = multiply_mat4(model, rotate(rotation.y, V3(0.0f, 1.0f, 0.0f)));
+	model = multiply_mat4(model, rotate(rotation.z, V3(0.0f, 0.0f, 1.0f)));
+	model = multiply_mat4(model, rotate(rotation.x, V3(1.0f, 0.0f, 0.0f)));
 
 	model = multiply_mat4(model, scale_mat4(size));
 

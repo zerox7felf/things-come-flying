@@ -1,15 +1,15 @@
-// camera.h
+// camera.hpp
 
-#ifndef _CAMERA_H
-#define _CAMERA_H
+#ifndef _CAMERA_HPP
+#define _CAMERA_HPP
 
 typedef struct Camera {
-  v3 pos;
-  v3 up;
-  v3 right;
-  v3 forward;
-  double pitch;
-  double yaw;
+	v3 pos;
+	v3 up;
+	v3 right;
+	v3 forward;
+	double pitch;
+	double yaw;
 } Camera;
 
 extern Camera camera;

@@ -1,36 +1,36 @@
-// matrix_math.h
+// matrix_math.hpp
 // based on HandMadeMath
 
-#ifndef _MATRIX_MATH_H
-#define _MATRIX_MATH_H
+#ifndef _MATRIX_MATH_HPP
+#define _MATRIX_MATH_HPP
 
-#include "common.h"
+#include "common.hpp"
 
 #ifndef NO_SSE
-  #if __SSE__
-    #define USE_SSE 1 // Use streaming SIMD extensions
-  #endif
+	#if __SSE__
+		#define USE_SSE 1 // Use streaming SIMD extensions
+	#endif
 #endif
 
 #if USE_SSE
-  #include <xmmintrin.h>
+	#include <xmmintrin.h>
 #endif
 
 typedef union mat4 {
-  float elements[4][4];
+	float elements[4][4];
 #if USE_SSE
-  __m128 rows[4];
+	__m128 rows[4];
 #endif
 } mat4;
 
 inline v3 operator+(v3 a, v3 b) {
-  v3 result = a;
+	v3 result = a;
 
-  result.x += b.x;
-  result.y += b.y;
-  result.z += b.z;
+	result.x += b.x;
+	result.y += b.y;
+	result.z += b.z;
 
-  return result;
+	return result;
 }
 
 inline mat4 mat4d(float diagonal);
@@ -78,23 +78,23 @@ inline mat4 mat4d(float diagonal) {
 }
 
 inline mat4 translate(v3 t) {
-  mat4 result = mat4d(1.0f);
+	mat4 result = mat4d(1.0f);
 
-  result.elements[3][0] += t.x;
-  result.elements[3][1] += t.y;
-  result.elements[3][2] += t.z;
+	result.elements[3][0] += t.x;
+	result.elements[3][1] += t.y;
+	result.elements[3][2] += t.z;
 
-  return result;
+	return result;
 }
 
 inline mat4 translate_mat4(mat4 m, v3 t) {
-  mat4 result = m;
+	mat4 result = m;
 
-  result.elements[3][0] += t.x;
-  result.elements[3][1] += t.y;
-  result.elements[3][2] += t.z;
+	result.elements[3][0] += t.x;
+	result.elements[3][1] += t.y;
+	result.elements[3][2] += t.z;
 
-  return result;
+	return result;
 }
 
 inline mat4 multiply_mat4(mat4 a, mat4 b) {
@@ -198,60 +198,60 @@ inline float to_radians(float angle) {
 }
 
 mat4 perspective(float fov, float aspect, float z_near, float z_far) {
-  mat4 result = {0};
+	mat4 result = {0};
 
-  float tan_theta_over2 = tanf(fov * (PI32 / 360.0f));
+	float tan_theta_over2 = tanf(fov * (PI32 / 360.0f));
 
-  result.elements[0][0] = 1.0f / tan_theta_over2;
-  result.elements[1][1] = aspect / tan_theta_over2;
-  result.elements[2][3] = -1.0f;
-  result.elements[2][2] = (z_near + z_far) / (z_near - z_far);
-  result.elements[3][2] = (1.0f * z_near * z_far) / (z_near - z_far);
-  result.elements[3][3] = 0.0f;
+	result.elements[0][0] = 1.0f / tan_theta_over2;
+	result.elements[1][1] = aspect / tan_theta_over2;
+	result.elements[2][3] = -1.0f;
+	result.elements[2][2] = (z_near + z_far) / (z_near - z_far);
+	result.elements[3][2] = (1.0f * z_near * z_far) / (z_near - z_far);
+	result.elements[3][3] = 0.0f;
 
-  return result;
+	return result;
 }
 
 inline mat4 orthographic(float left, float right, float bottom, float top, float z_near, float z_far) {
-  mat4 result = {0};
+	mat4 result = {0};
 
-  result.elements[0][0] = 2.0f / (right - left);
-  result.elements[1][1] = 2.0f / (top - bottom);
-  result.elements[2][2] = 2.0f / (z_near - z_far);
-  result.elements[3][3] = 1.0f;
+	result.elements[0][0] = 2.0f / (right - left);
+	result.elements[1][1] = 2.0f / (top - bottom);
+	result.elements[2][2] = 2.0f / (z_near - z_far);
+	result.elements[3][3] = 1.0f;
 
-  result.elements[3][0] = (left + right) / (left - right);
-  result.elements[3][1] = (bottom + top) / (bottom - top);
-  result.elements[3][2] = (z_far + z_near) / (z_near - z_far);
+	result.elements[3][0] = (left + right) / (left - right);
+	result.elements[3][1] = (bottom + top) / (bottom - top);
+	result.elements[3][2] = (z_far + z_near) / (z_near - z_far);
 
-  return result;
+	return result;
 }
 
 inline mat4 look_at(v3 eye, v3 center, v3 up) {
-  mat4 result = mat4d(1.0f);
+	mat4 result = mat4d(1.0f);
 
-  v3 front = normalize_v3(diff_v3(center, eye));
-  v3 side = normalize_v3(cross_product(front, up));
-  v3 u = cross_product(side, front);
+	v3 front = normalize_v3(diff_v3(center, eye));
+	v3 side = normalize_v3(cross_product(front, up));
+	v3 u = cross_product(side, front);
 
-  result.elements[0][0] = side.x;
-  result.elements[0][1] = u.x;
-  result.elements[0][2] = -front.x;
+	result.elements[0][0] = side.x;
+	result.elements[0][1] = u.x;
+	result.elements[0][2] = -front.x;
 
-  result.elements[1][0] = side.y;
-  result.elements[1][1] = u.y;
-  result.elements[1][2] = -front.y;
+	result.elements[1][0] = side.y;
+	result.elements[1][1] = u.y;
+	result.elements[1][2] = -front.y;
 
-  result.elements[2][0] = side.z;
-  result.elements[2][1] = u.z;
-  result.elements[2][2] = -front.z;
+	result.elements[2][0] = side.z;
+	result.elements[2][1] = u.z;
+	result.elements[2][2] = -front.z;
 
-  result.elements[3][0] = -dot_v3(side, eye);
-  result.elements[3][1] = -dot_v3(u, eye);
-  result.elements[3][2] = dot_v3(front, eye);
-  result.elements[3][3] = 1.0f;
+	result.elements[3][0] = -dot_v3(side, eye);
+	result.elements[3][1] = -dot_v3(u, eye);
+	result.elements[3][2] = dot_v3(front, eye);
+	result.elements[3][3] = 1.0f;
 
-  return result;
+	return result;
 }
 
 #endif

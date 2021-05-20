@@ -1,9 +1,9 @@
-// renderer.h
+// renderer.hpp
 
-#ifndef _RENDERER_H
-#define _RENDERER_H
+#ifndef _RENDERER_HPP
+#define _RENDERER_HPP
 
-#include "matrix_math.h"
+#include "matrix_math.hpp"
 
 typedef struct Model {
   u32 draw_count;

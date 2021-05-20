@@ -1,9 +1,11 @@
 // engine.cpp
 
-#include "engine.h"
-#include "window.h"
-#include "camera.h"
-#include "renderer.h"
+#include <sys/time.h>	// gettimeofday
+
+#include "engine.hpp"
+#include "window.hpp"
+#include "camera.hpp"
+#include "renderer.hpp"
 
 Engine engine;
 
@@ -12,14 +14,28 @@ static i32 engine_run(Engine* engine);
 
 void engine_initialize(Engine* engine) {
 	engine->is_running = 1;
+	engine->animation_playing = 0;
 	engine->delta_time = 0;
+	engine->total_time = 0;
 	engine->mouse_x = 0;
 	engine->mouse_y = 0;
 	camera_initialize(V3(0, 0, 0));
 }
 
 i32 engine_run(Engine* engine) {
+	float angle = 0.0f;
+	struct timeval now = {0};
+	struct timeval prev = {0};
 	while (engine->is_running && window_poll_events() >= 0) {
+		prev = now;
+		gettimeofday(&now, NULL);
+		engine->delta_time = ((((now.tv_sec - prev.tv_sec) * 1000000.0f) + now.tv_usec) - (prev.tv_usec)) / 1000000.0f;
+		if (engine->animation_playing) {
+			engine->total_time += engine->delta_time;
+		}
+		if (key_down[GLFW_KEY_SPACE]) {
+			engine->animation_playing = !engine->animation_playing;
+		}
 		if (key_down[GLFW_KEY_ESCAPE]) {
 			engine->is_running = 0;
 		}

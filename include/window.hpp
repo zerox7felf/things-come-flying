@@ -1,11 +1,11 @@
-// window.h
+// window.hpp
 
-#ifndef _WINDOW_H
-#define _WINDOW_H
+#ifndef _WINDOW_HPP
+#define _WINDOW_HPP
 
 #include <GLFW/glfw3.h>
 
-#include "common.h"
+#include "common.hpp"
 
 extern i8 mouse_state;
 extern i8 key_down[];

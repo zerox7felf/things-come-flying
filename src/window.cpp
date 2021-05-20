@@ -1,7 +1,7 @@
 // window.cpp
 
-#include "renderer.h"
-#include "window.h"
+#include "renderer.hpp"
+#include "window.hpp"
 
 i8 mouse_state = 0;
 i8 key_down[GLFW_KEY_LAST] = {0};

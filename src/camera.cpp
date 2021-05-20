@@ -1,10 +1,10 @@
 // camera.cpp
 
-#include "common.h"
-#include "matrix_math.h"
-#include "renderer.h"
-#include "engine.h"	// To get access to the mouse cursor
-#include "camera.h"
+#include "common.hpp"
+#include "matrix_math.hpp"
+#include "renderer.hpp"
+#include "engine.hpp"	// To get access to the mouse cursor
+#include "camera.hpp"
 
 #define mouse_sensitivity 0.05f
 
