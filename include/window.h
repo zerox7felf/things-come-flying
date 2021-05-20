@@ -3,9 +3,15 @@
 #ifndef _WINDOW_H
 #define _WINDOW_H
 
+#include <GLFW/glfw3.h>
+
 #include "common.h"
 
-i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen);
+extern i8 mouse_state;
+extern i8 key_down[];
+extern i8 key_pressed[];
+
+i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsync);
 
 i32 window_width();
 

@@ -136,7 +136,7 @@ inline float to_radians(float angle) {
 	return angle * (PI32 / 180.0f);
 }
 
-inline mat4 perspective(float fov, float aspect, float z_near, float z_far) {
+mat4 perspective(float fov, float aspect, float z_near, float z_far) {
   mat4 result = {0};
 
   float tan_theta_over2 = tanf(fov * (PI32 / 360.0f));

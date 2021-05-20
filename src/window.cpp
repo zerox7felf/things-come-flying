@@ -1,17 +1,11 @@
 // window.cpp
 
-#include <GL/glew.h>
-
-#if defined(__APPLE__)
-	#include <OpenGL/gl.h>
-	#include <OpenGL/glu.h>
-#else
-	#include <GL/gl.h>
-#endif
-
-#include <GLFW/glfw3.h>
-
+#include "renderer.h"
 #include "window.h"
+
+i8 mouse_state = 0;
+i8 key_down[GLFW_KEY_LAST] = {0};
+i8 key_pressed[GLFW_KEY_LAST] = {0};
 
 typedef struct Window  {
 	i32 width;
@@ -28,10 +22,15 @@ void framebuffer_callback(GLFWwindow* window, i32 width, i32 height) {
 	glViewport(0, 0, width, height);
 	win.width = width;
 	win.height = height;
-	// TODO(lucas): Update projection matrix here
+	projection = perspective(
+		80, // fov
+		(float)width / height,	// aspect ratio
+		0.02f,	// z near clipping
+		2000.0f // z far clipping
+	);
 }
 
-i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen) {
+i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsync) {
 	win.width = width;
 	win.height = height;
 	win.fullscreen = fullscreen;
@@ -52,13 +51,7 @@ i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen) {
 	}
 	glfwMakeContextCurrent((GLFWwindow*)win.window);
 	glfwSetFramebufferSizeCallback((GLFWwindow*)win.window, framebuffer_callback);
-	i32 glew_error = glewInit();
-	if (glew_error != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(glew_error));
-		return Error;
-	}
-	i32 v_sync = 1;
-	glfwSwapInterval(v_sync);
+	glfwSwapInterval(vsync);
 	return NoError;
 }
 
@@ -72,6 +65,31 @@ i32 window_height() {
 
 i32 window_poll_events() {
 	glfwPollEvents();
+
+	for (u16 i = 0; i < GLFW_KEY_LAST; i++) {
+		i32 key_state = glfwGetKey((GLFWwindow*)win.window, i);
+		if (key_state == GLFW_PRESS) {
+			key_pressed[i] = !key_down[i];
+			key_down[i] = 1;
+		}
+		else {
+			key_down[i] = 0;
+			key_pressed[i] = 0;
+		}
+	}
+
+	i32 left_mouse_state = glfwGetMouseButton((GLFWwindow*)win.window, 0);
+	i32 right_mouse_state = glfwGetMouseButton((GLFWwindow*)win.window, 1);
+	i32 middle_mouse_state = glfwGetMouseButton((GLFWwindow*)win.window, 2);
+
+	(left_mouse_state && !(mouse_state & (1 << 7))) ? mouse_state |= (1 << 6) : (mouse_state &= ~(1 << 6));
+	left_mouse_state ? mouse_state |= (1 << 7) : (mouse_state &= ~(1 << 7));
+	(right_mouse_state && !(mouse_state & (1 << 5))) ? mouse_state |= (1 << 4) : (mouse_state &= ~(1 << 4));
+	right_mouse_state ? mouse_state |= (1 << 5) : (mouse_state &= ~(1 << 5));
+
+	(middle_mouse_state && !(mouse_state & (1 << 3))) ? mouse_state |= (1 << 2) : (mouse_state &= ~(1 << 2));
+	middle_mouse_state ? mouse_state |= (1 << 3) : (mouse_state &= ~(1 << 3));
+
 	if (glfwWindowShouldClose((GLFWwindow*)win.window)) {
 		return -1;
 	}

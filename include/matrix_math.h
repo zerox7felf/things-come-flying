@@ -48,4 +48,10 @@ extern v3 cross_product(v3 a, v3 b);
 
 extern float to_radians(float angle);
 
+extern mat4 perspective(float fov, float aspect, float z_near, float z_far);
+
+extern mat4 orthographic(float left, float right, float bottom, float top, float z_near, float z_far);
+
+extern mat4 look_at(v3 eye, v3 center, v3 up);
+
 #endif
