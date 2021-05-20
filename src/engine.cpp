@@ -20,11 +20,16 @@ void engine_initialize(Engine* engine) {
 
 i32 engine_run(Engine* engine) {
 	while (engine->is_running && window_poll_events() >= 0) {
-		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
-		camera_update();
 		if (key_down[GLFW_KEY_ESCAPE]) {
 			engine->is_running = 0;
 		}
+		if (key_down[GLFW_KEY_F11]) {
+			window_toggle_fullscreen();
+		}
+
+		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
+		camera_update();
+
 		render_cube(V3(0, 0, -20), V3(0, 0, 0), V3(2, 1, 1));
 		render_cube(V3(0, 0, 20), V3(0, 0, 0), V3(1, 2, 1));
 

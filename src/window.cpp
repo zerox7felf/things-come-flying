@@ -23,7 +23,7 @@ void framebuffer_callback(GLFWwindow* window, i32 width, i32 height) {
 	win.width = width;
 	win.height = height;
 	projection = perspective(
-		80, // fov
+		90, // fov
 		(float)width / height,	// aspect ratio
 		0.02f,	// z near clipping
 		2000.0f // z far clipping
@@ -109,6 +109,20 @@ void window_swap_buffers() {
 
 void window_get_cursor(double* x, double* y) {
 	glfwGetCursorPos((GLFWwindow*)win.window, x, y);
+}
+
+void window_toggle_fullscreen() {
+  win.fullscreen = !win.fullscreen;
+  if (win.fullscreen) {
+    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	win.width = mode->width;
+	win.height = mode->height;
+  }
+  else {
+  	win.width = 800;
+  	win.height = 600;
+  }
+  glfwSetWindowSize((GLFWwindow*)win.window, win.width, win.height);
 }
 
 void window_close() {
