@@ -7,6 +7,8 @@
 #include "camera.hpp"
 #include "renderer.hpp"
 
+#define MAX_DT 1.0f
+
 Engine engine;
 
 static void engine_initialize(Engine* engine);
@@ -30,6 +32,9 @@ i32 engine_run(Engine* engine) {
 		prev = now;
 		gettimeofday(&now, NULL);
 		engine->delta_time = ((((now.tv_sec - prev.tv_sec) * 1000000.0f) + now.tv_usec) - (prev.tv_usec)) / 1000000.0f;
+		if (engine->delta_time >= MAX_DT) {
+			engine->delta_time = MAX_DT;
+		}
 		if (engine->animation_playing) {
 			engine->total_time += engine->delta_time;
 		}
@@ -47,7 +52,9 @@ i32 engine_run(Engine* engine) {
 		camera_update();
 
 		render_cube(V3(0, 0, -20), V3(0, 0, 0), V3(2, 1, 1));
-		render_cube(V3(0, 0, 20), V3(0, 0, 0), V3(1, 2, 1));
+		render_cube(V3(0, 0, 20), V3(0, 0, angle), V3(1, 2, 1));
+
+		angle += 10 * engine->delta_time;
 
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);
