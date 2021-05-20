@@ -15,12 +15,11 @@ void engine_initialize(Engine* engine) {
 }
 
 i32 engine_run(Engine* engine) {
-	i32 tick = 0;
 	while (engine->is_running && window_poll_events() >= 0) {
-
 		if (key_down[GLFW_KEY_ESCAPE]) {
 			engine->is_running = 0;
 		}
+		render_cube(V3(0, 0, -20), V3(0, 0, 0), V3(1, 1, 1));
 
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);

@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define MAX_PATH_SIZE 512
 #define PI32 3.14159265359f
@@ -27,16 +28,22 @@ typedef union v3 {
   struct {
     float x, y, z;
   };
+  struct {
+    float r, g, b;
+  };
 } v3;
 
 typedef union v2 {
   struct {
     float x, y;
   };
+  struct {
+    float w, h;
+  };
 } v2;
 
-#define V2(X, Y) ((v2) { .x = X, .y = Y })
-#define V3(X, Y, Z) ((v3) { .x = X, .y = Y, .z = Z })
+#define V2(X, Y) ((v2) {{.x = X, .y = Y, }})
+#define V3(X, Y, Z) ((v3) {{ .x = X, .y = Y, .z = Z, }})
 
 typedef enum Status_code {
   NoError = 0,
