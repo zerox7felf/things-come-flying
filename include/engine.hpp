@@ -4,6 +4,7 @@
 #define _ENGINE_HPP
 
 #include "common.hpp"
+#include "memory.hpp"
 #include "matrix_math.hpp"
 
 typedef struct Engine {

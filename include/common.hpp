@@ -42,6 +42,11 @@ typedef union v2 {
 	};
 } v2;
 
+typedef struct Buffer {
+	char* data;
+	i32 size;
+} Buffer;
+
 #define V2(X, Y) ((v2) {{.x = X, .y = Y, }})
 #define V3(X, Y, Z) ((v3) {{ .x = X, .y = Y, .z = Z, }})
 
@@ -49,5 +54,55 @@ typedef enum Status_code {
 	NoError = 0,
 	Error = -1,
 } Status_code;
+
+#define list_push(List, Count, Element) do { \
+	if (List == NULL) { \
+    List = list_initialize(sizeof(Element), 1); List[0] = Element; Count = 1; break; \
+  } \
+	void* NewList = m_realloc(List, Count * sizeof(*List), (1 + Count) * (sizeof(Element))); \
+	if (NewList) { \
+		List = NewList; \
+		List[(Count)++] = Element; \
+	} \
+} while (0); \
+
+#define list_realloc(List, Count, NewSize) do { \
+  if (List == NULL) break; \
+  if (NewSize == 0) { list_free(List, Count); break; } \
+	void* NewList = m_realloc(List, Count * sizeof(*List), (NewSize) * (sizeof(*List))); \
+  List = NewList; \
+  Count = NewSize; \
+} while(0); \
+
+#define list_shrink(List, Count, Num) { \
+  if ((Count - Num) >= 0) { \
+	  list_realloc(List, Count, Count - Num); \
+  } \
+}
+ 
+#define list_assign(List, Count, Index, Element) { \
+	assert(List != NULL); \
+	if (Index < Count) { \
+		List[Index] = Element; \
+	} else { \
+		assert(0); \
+	} \
+} \
+
+#define list_free(List, Count) { \
+	if ((List) != NULL) { \
+		m_free(List, Count * sizeof(*List)); \
+		Count = 0; \
+		List = NULL; \
+	}\
+}
+
+void buffer_free(Buffer* buffer);
+
+void* list_initialize(const i32 size, const i32 count);
+
+i32 read_file(const char* path, Buffer* buffer);
+
+i32 read_and_null_terminate_file(const char* path, Buffer* buffer);
 
 #endif

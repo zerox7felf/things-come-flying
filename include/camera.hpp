@@ -8,8 +8,8 @@ typedef struct Camera {
 	v3 up;
 	v3 right;
 	v3 forward;
-	double pitch;
-	double yaw;
+	float pitch;
+	float yaw;
 } Camera;
 
 extern Camera camera;

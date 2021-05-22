@@ -71,5 +71,6 @@ i32 engine_start() {
 		engine_run(&engine);
 		window_close();
 	}
+	assert("memory leak" && (memory_total_allocated() == 0));
 	return result;
 }

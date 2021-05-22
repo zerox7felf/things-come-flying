@@ -93,6 +93,7 @@ static const char* frag_source_code =
 
 static void opengl_initialize();
 static i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out);
+static i32 shader_compile_from_file(const char* path, u32* program_out);
 static i32 upload_model(Model* model, float* vertices, u32 vertex_count);
 
 i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out) {
@@ -152,6 +153,28 @@ done:
 	return result;
 }
 
+i32 shader_compile_from_file(const char* path, u32* program_out) {
+	i32 result = NoError;
+
+	Buffer vert_source = {0};
+	Buffer frag_source = {0};
+	char vert_path[MAX_PATH_SIZE] = {0};
+	char frag_path[MAX_PATH_SIZE] = {0};
+	snprintf(vert_path, MAX_PATH_SIZE, "%s.vert", path);
+	snprintf(frag_path, MAX_PATH_SIZE, "%s.frag", path);
+	if ((result = read_and_null_terminate_file(vert_path, &vert_source)) != NoError) {
+		goto done;
+	}
+	if ((result = read_and_null_terminate_file(frag_path, &frag_source)) != NoError) {
+		goto done;
+	}
+	result = shader_compile_from_source(vert_source.data, frag_source.data, program_out);
+done:
+	buffer_free(&vert_source);
+	buffer_free(&frag_source);
+	return result;
+}
+
 i32 upload_model(Model* model, float* vertices, u32 vertex_count) {
 	model->draw_count = vertex_count / 3;
 
@@ -189,13 +212,14 @@ i32 renderer_initialize() {
 	view = mat4d(1.0f);
 	model = mat4d(1.0f);
 
-	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
+	// shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
+	shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
 	upload_model(&cube_model, cube_vertices, ARR_SIZE(cube_vertices));
 	return 0;
 }
 
 void render_cube(v3 position, v3 rotation, v3 size) {
-	u32 handle = basic_shader;
+	u32 handle = diffuse_shader;
 	glUseProgram(handle);
 
 	model = translate(position);
