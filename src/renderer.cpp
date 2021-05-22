@@ -10,6 +10,7 @@
 #endif
 
 #include "common.hpp"
+#include "mesh.hpp"
 #include "renderer.hpp"
 
 mat4 projection;
@@ -19,6 +20,8 @@ mat4 model;
 u32 basic_shader = 0;
 u32 diffuse_shader = 0;
 Model cube_model = {0};
+Mesh sphere_mesh = {0};
+Model sphere_model = {0};
 
 #define SHADER_ERROR_BUFFER_SIZE 512
 
@@ -95,6 +98,9 @@ static void opengl_initialize();
 static i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out);
 static i32 shader_compile_from_file(const char* path, u32* program_out);
 static i32 upload_model(Model* model, float* vertices, u32 vertex_count);
+static i32 upload_model(Model* model, Mesh* mesh);
+static void unload_model(Model* model);
+static void store_attribute(Model* model, u32 attribute_index, u32 count, u32 size, void* data);
 
 i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out) {
 	i32 result = NoError;
@@ -186,9 +192,41 @@ i32 upload_model(Model* model, float* vertices, u32 vertex_count) {
 	glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(float), vertices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, 3 * sizeof(float), GL_FALSE, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, 3 * sizeof(float), GL_FALSE, NULL);
 	glBindVertexArray(0);
 	return NoError;
+}
+
+i32 upload_model(Model* model, Mesh* mesh) {
+	model->draw_count = mesh->vertex_index_count;	// We are using indexed rendering, which means that the draw count is equal to the amount of indices on the mesh
+
+	glGenVertexArrays(1, &model->vao);
+	glBindVertexArray(model->vao);
+
+	glGenBuffers(1, &model->ebo);
+
+	store_attribute(model, 0, 3, mesh->vertex_count * sizeof(v3), &mesh->vertices[0]);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_index_count * sizeof(u32), &mesh->vertex_indices[0], GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+	return NoError;
+}
+
+void unload_model(Model* model) {
+	glDeleteVertexArrays(1, &model->vao);
+	glDeleteVertexArrays(1, &model->vbo);
+	glDeleteBuffers(1, &model->ebo);
+}
+
+void store_attribute(Model* model, u32 attribute_index, u32 count, u32 size, void* data) {
+	glEnableVertexAttribArray(attribute_index);
+	glGenBuffers(1, &model->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, model->vbo);
+	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	glVertexAttribPointer(attribute_index, count, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void opengl_initialize() {
@@ -212,9 +250,10 @@ i32 renderer_initialize() {
 	view = mat4d(1.0f);
 	model = mat4d(1.0f);
 
-	// shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
+	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
 	shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
-	upload_model(&cube_model, cube_vertices, ARR_SIZE(cube_vertices));
+	load_mesh("resource/mesh/sphere.obj", &sphere_mesh);
+	upload_model(&sphere_model, &sphere_mesh);
 	return 0;
 }
 
@@ -238,7 +277,6 @@ void render_cube(v3 position, v3 rotation, v3 size) {
 
 	glBindVertexArray(model->vao);
 
-	// glDrawElements(GL_TRIANGLES, model->draw_count, GL_UNSIGNED_INT, 0);
 	glDrawArrays(GL_TRIANGLES, 0, model->draw_count);
 
 	glBindVertexArray(0);
@@ -246,8 +284,42 @@ void render_cube(v3 position, v3 rotation, v3 size) {
 	glUseProgram(0);
 }
 
+void render_mesh(v3 position, v3 rotation, v3 size) {
+	u32 handle = diffuse_shader;
+	glUseProgram(handle);
+
+	model = translate(position);
+
+	model = multiply_mat4(model, rotate(rotation.y, V3(0.0f, 1.0f, 0.0f)));
+	model = multiply_mat4(model, rotate(rotation.z, V3(0.0f, 0.0f, 1.0f)));
+	model = multiply_mat4(model, rotate(rotation.x, V3(1.0f, 0.0f, 0.0f)));
+
+	model = multiply_mat4(model, scale_mat4(size));
+
+	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+
+	Model* model = &sphere_model;
+
+	glBindVertexArray(model->vao);
+
+	glEnableVertexAttribArray(0);
+
+	glDrawElements(GL_TRIANGLES, model->draw_count, GL_UNSIGNED_INT, 0);
+
+	glDisableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	glUseProgram(0);
+}
+
 void renderer_destroy() {
+	unload_model(&sphere_model);
+	unload_mesh(&sphere_mesh);
 	glDeleteVertexArrays(1, &cube_model.vao);
 	glDeleteVertexArrays(1, &cube_model.vbo);
+	glDeleteShader(basic_shader);
 	glDeleteShader(diffuse_shader);
 }

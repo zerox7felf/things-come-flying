@@ -57,11 +57,11 @@ typedef enum Status_code {
 
 #define list_push(List, Count, Element) do { \
 	if (List == NULL) { \
-    List = list_initialize(sizeof(Element), 1); List[0] = Element; Count = 1; break; \
+    List = (typeof(Element)*)list_initialize(sizeof(Element), 1); List[0] = Element; Count = 1; break; \
   } \
 	void* NewList = m_realloc(List, Count * sizeof(*List), (1 + Count) * (sizeof(Element))); \
 	if (NewList) { \
-		List = NewList; \
+		List = (typeof(Element)*)NewList; \
 		List[(Count)++] = Element; \
 	} \
 } while (0); \
@@ -90,7 +90,7 @@ typedef enum Status_code {
 } \
 
 #define list_free(List, Count) { \
-	if ((List) != NULL) { \
+	if ((List) != NULL && Count > 0) { \
 		m_free(List, Count * sizeof(*List)); \
 		Count = 0; \
 		List = NULL; \

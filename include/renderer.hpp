@@ -20,6 +20,8 @@ i32 renderer_initialize();
 
 void render_cube(v3 position, v3 rotation, v3 size);
 
+void render_mesh(v3 position, v3 rotation, v3 size);
+
 void renderer_destroy();
 
 #endif

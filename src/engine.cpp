@@ -51,8 +51,8 @@ i32 engine_run(Engine* engine) {
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
 
-		render_cube(V3(0, 0, -20), V3(0, 0, 0), V3(2, 1, 1));
-		render_cube(V3(0, 0, 20), V3(0, 0, angle), V3(1, 2, 1));
+		render_mesh(V3(0, 0, -20), V3(0, angle, 0), V3(2, 2, 2));
+		render_mesh(V3(0, 0, 20), V3(0, 0, angle), V3(1, 1, 1));
 
 		angle += 10 * engine->delta_time;
 
@@ -70,6 +70,7 @@ i32 engine_start() {
 		renderer_initialize();
 		engine_run(&engine);
 		window_close();
+		renderer_destroy();
 	}
 	assert("memory leak" && (memory_total_allocated() == 0));
 	return result;

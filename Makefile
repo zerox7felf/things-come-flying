@@ -9,7 +9,10 @@ prepare:
 	cp -dr ${RES_DIR} ${BUILD_DIR}/${RES_DIR}
 
 compile:
-	${CC} ${FLAGS} ${LIB} ${O_RELEASE}
+	${CC} ${FLAGS} ${LIB} ${O_DEBUG}
+
+debug:
+	gdb ./${BUILD_DIR}/${PROG}
 
 run:
 	./${BUILD_DIR}/${PROG}
