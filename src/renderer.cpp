@@ -206,6 +206,8 @@ i32 upload_model(Model* model, Mesh* mesh) {
 	glGenBuffers(1, &model->ebo);
 
 	store_attribute(model, 0, 3, mesh->vertex_count * sizeof(v3), &mesh->vertices[0]);
+	store_attribute(model, 1, 2, mesh->uv_count * sizeof(v2), &mesh->uv[0]);
+	store_attribute(model, 2, 3, mesh->normal_count * sizeof(v3), &mesh->normals[0]);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_index_count * sizeof(u32), &mesh->vertex_indices[0], GL_STATIC_DRAW);
@@ -304,11 +306,15 @@ void render_mesh(v3 position, v3 rotation, v3 size) {
 
 	glBindVertexArray(model->vao);
 
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(0);	// vertices
+	glEnableVertexAttribArray(1);	// uv coordinates
+	glEnableVertexAttribArray(2);	// normals
 
 	glDrawElements(GL_TRIANGLES, model->draw_count, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
 
 	glBindVertexArray(0);
 

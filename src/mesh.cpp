@@ -18,10 +18,22 @@
 static void mesh_initialize(Mesh* mesh);
 
 void mesh_initialize(Mesh* mesh) {
+#if 1
+	memset(mesh, 0, sizeof(Mesh));
+#else
 	mesh->vertices = NULL;
 	mesh->vertex_count = 0;
 	mesh->vertex_indices = NULL;
 	mesh->vertex_index_count = 0;
+	mesh->uv = NULL;
+	mesh->uv_count = 0;
+	mesh->uv_indices = NULL;
+	mesh->uv_index_count = 0;
+	mesh->normals = NULL;
+	mesh->normal_count = 0;
+	mesh->normal_indices = NULL;
+	mesh->normal_index_count = 0;
+#endif
 }
 
 i32 load_mesh(const char* path, Mesh* mesh) {
@@ -46,6 +58,16 @@ i32 load_mesh(const char* path, Mesh* mesh) {
 			safe_scanf(scan_status, iterator, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
 			list_push(mesh->vertices, mesh->vertex_count, vertex);
 		}
+		else if (!strncmp(line, "vt", MAX_LINE_SIZE)) {
+			v2 uv;
+			safe_scanf(scan_status, iterator, "%f %f\n", &uv.x, &uv.y);
+			list_push(mesh->uv, mesh->uv_count, uv);
+		}
+		else if (!strncmp(line, "vn", MAX_LINE_SIZE)) {
+			v3 normal;
+			safe_scanf(scan_status, iterator, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+			list_push(mesh->normals, mesh->normal_count, normal);
+		}
 		else if (!strncmp(line, "f", MAX_LINE_SIZE)) {
 			u32 x[3] = {0};	// vertex indices
 			u32 y[3] = {0};	// uv indices
@@ -65,6 +87,14 @@ i32 load_mesh(const char* path, Mesh* mesh) {
 			list_push(mesh->vertex_indices, mesh->vertex_index_count, x[0] - 1);
 			list_push(mesh->vertex_indices, mesh->vertex_index_count, x[1] - 1);
 			list_push(mesh->vertex_indices, mesh->vertex_index_count, x[2] - 1);
+
+			list_push(mesh->uv_indices, mesh->uv_index_count, y[0] - 1);
+			list_push(mesh->uv_indices, mesh->uv_index_count, y[1] - 1);
+			list_push(mesh->uv_indices, mesh->uv_index_count, y[2] - 1);
+
+			list_push(mesh->normal_indices, mesh->normal_index_count, y[0] - 1);
+			list_push(mesh->normal_indices, mesh->normal_index_count, y[1] - 1);
+			list_push(mesh->normal_indices, mesh->normal_index_count, y[2] - 1);
 		}
 	}
 done:
@@ -75,4 +105,8 @@ done:
 void unload_mesh(Mesh* mesh) {
 	list_free(mesh->vertices, mesh->vertex_count);
 	list_free(mesh->vertex_indices, mesh->vertex_index_count);
+	list_free(mesh->uv, mesh->uv_count);
+	list_free(mesh->uv_indices, mesh->uv_index_count);
+	list_free(mesh->normals, mesh->normal_count);
+	list_free(mesh->normal_indices, mesh->normal_index_count);
 }

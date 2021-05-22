@@ -51,8 +51,8 @@ i32 engine_run(Engine* engine) {
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
 
-		render_mesh(V3(0, 0, -20), V3(0, angle, 0), V3(2, 2, 2));
-		render_mesh(V3(0, 0, 20), V3(0, 0, angle), V3(1, 1, 1));
+		render_mesh(V3(0, 0, -5), V3(0, angle, 0), V3(3, 3, 3));
+		render_mesh(V3(0, 0, 5), V3(0, 0, angle), V3(2, 2, 2));
 
 		angle += 10 * engine->delta_time;
 
