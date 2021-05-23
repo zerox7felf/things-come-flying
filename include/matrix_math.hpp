@@ -45,7 +45,7 @@ inline mat4 scale_mat4(v3 scale);
 
 inline mat4 rotate(float angle, v3 axis);
 
-inline float dot_v3(v3 a, v3 b);
+inline float dot(v3 a, v3 b);
 
 inline float length_square_v3(v3 a);
 
@@ -53,7 +53,7 @@ inline float length_v3(v3 a);
 
 inline v3 diff_v3(v3 a, v3 b);
 
-inline v3 normalize_v3(v3 a);
+inline v3 normalize(v3 a);
 
 inline v3 cross_product(v3 a, v3 b);
 
@@ -65,6 +65,13 @@ inline mat4 orthographic(float left, float right, float bottom, float top, float
 
 inline mat4 look_at(v3 eye, v3 center, v3 up);
 
+#if USE_SSE
+
+inline __m128 linear_combine(__m128 a, mat4 b);
+
+inline mat4 transpose(mat4 a);
+
+#endif
 
 inline mat4 mat4d(float diagonal) {
 	mat4 result = {0};
@@ -100,8 +107,16 @@ inline mat4 translate_mat4(mat4 m, v3 t) {
 inline mat4 multiply_mat4(mat4 a, mat4 b) {
 	mat4 result = {0};
 
-#if USE_SSE && 0
-	// TODO(lucas): Implement SSE matrix multiply
+#if USE_SSE
+	mat4 left = transpose(a);
+	mat4 right = transpose(b);
+
+	result.rows[0] = linear_combine(left.rows[0], right);
+	result.rows[1] = linear_combine(left.rows[1], right);
+	result.rows[2] = linear_combine(left.rows[2], right);
+	result.rows[3] = linear_combine(left.rows[3], right);
+
+	result = transpose(result);
 #else
 	for (i32 col = 0; col < 4; col++) {
 		for (i32 row = 0; row < 4; row++) {
@@ -128,7 +143,7 @@ inline mat4 scale_mat4(v3 scale) {
 
 inline mat4 rotate(float angle, v3 axis) {
 	mat4 result = mat4d(1.0f);
-	axis = normalize_v3(axis);
+	axis = normalize(axis);
 
 	float sin_theta = sinf(to_radians(angle));
 	float cos_theta = cosf(to_radians(angle));
@@ -149,12 +164,12 @@ inline mat4 rotate(float angle, v3 axis) {
 	return result;
 }
 
-inline float dot_v3(v3 a, v3 b) {
+inline float dot(v3 a, v3 b) {
 	return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
 inline float length_square_v3(v3 a) {
-	return dot_v3(a, a);
+	return dot(a, a);
 }
 
 inline float length_v3(v3 a) {
@@ -171,7 +186,7 @@ inline v3 diff_v3(v3 a, v3 b) {
 	return result;
 }
 
-inline v3 normalize_v3(v3 a) {
+inline v3 normalize(v3 a) {
 	v3 result = {0};
 	float length = length_v3(a);
 
@@ -230,8 +245,8 @@ inline mat4 orthographic(float left, float right, float bottom, float top, float
 inline mat4 look_at(v3 eye, v3 center, v3 up) {
 	mat4 result = mat4d(1.0f);
 
-	v3 front = normalize_v3(diff_v3(center, eye));
-	v3 side = normalize_v3(cross_product(front, up));
+	v3 front = normalize(diff_v3(center, eye));
+	v3 side = normalize(cross_product(front, up));
 	v3 u = cross_product(side, front);
 
 	result.elements[0][0] = side.x;
@@ -246,12 +261,35 @@ inline mat4 look_at(v3 eye, v3 center, v3 up) {
 	result.elements[2][1] = u.z;
 	result.elements[2][2] = -front.z;
 
-	result.elements[3][0] = -dot_v3(side, eye);
-	result.elements[3][1] = -dot_v3(u, eye);
-	result.elements[3][2] = dot_v3(front, eye);
+	result.elements[3][0] = -dot(side, eye);
+	result.elements[3][1] = -dot(u, eye);
+	result.elements[3][2] = dot(front, eye);
 	result.elements[3][3] = 1.0f;
 
 	return result;
 }
+
+#if USE_SSE
+
+inline __m128 linear_combine(__m128 a, mat4 b) {
+	__m128 result;
+
+	result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), b.rows[0]);
+	result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0x55), b.rows[1]));
+	result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xaa), b.rows[2]));
+	result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xff), b.rows[3]));
+
+	return result;
+}
+
+inline mat4 transpose(mat4 a) {
+	mat4 result = a;
+
+	_MM_TRANSPOSE4_PS(result.rows[0], result.rows[1], result.rows[2], result.rows[3]);
+
+	return result;
+}
+
+#endif
 
 #endif

@@ -49,9 +49,9 @@ void camera_update() {
 		sinf(to_radians(camera.yaw)) * cosf(to_radians(camera.pitch))
 	);
 
-	camera.forward = normalize_v3(camera_dir);
-	camera.right = normalize_v3(cross_product(camera.forward, V3(0.0f, 1.0f, 0.0f)));
-	camera.up = normalize_v3(cross_product(camera.right, camera.forward));
+	camera.forward = normalize(camera_dir);
+	camera.right = normalize(cross_product(camera.forward, V3(0.0f, 1.0f, 0.0f)));
+	camera.up = normalize(cross_product(camera.right, camera.forward));
 
 	view = look_at(camera.pos, camera.pos + camera.forward, camera.up);
 }

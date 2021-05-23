@@ -87,8 +87,8 @@ static const char* vert_source_code =
 	"\n"
 	"void main() {\n"
 	"	gl_Position = projection * view * model * vec4(position, 1);\n"
-	"}\n"
-	;
+	"}\n";
+
 static const char* frag_source_code =
 	"#version 330 core\n"
 	"\n"
@@ -96,8 +96,7 @@ static const char* frag_source_code =
 	"\n"
 	"void main() {\n"
 	"	out_color = vec4(1, 0, 0, 1);\n"
-	"}\n"
-	;
+	"}\n";
 
 static void opengl_initialize();
 static i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out);
@@ -194,8 +193,8 @@ i32 upload_texture(Image* image, u32* texture_id) {
 	glGenTextures(1, texture_id);
 	glBindTexture(GL_TEXTURE_2D, *texture_id);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
