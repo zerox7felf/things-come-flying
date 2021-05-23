@@ -36,7 +36,34 @@ void mesh_initialize(Mesh* mesh) {
 #endif
 }
 
-i32 load_mesh(const char* path, Mesh* mesh) {
+i32 mesh_sort_indices(Mesh* mesh) {
+	v2* uv = (v2*)m_malloc(sizeof(v2) * mesh->vertex_index_count);
+	u32 uv_count = mesh->vertex_index_count;
+
+	v3* normals = (v3*)m_malloc(sizeof(v3) * mesh->vertex_index_count);
+	u32 normal_count = mesh->vertex_index_count;
+
+	for (u32 i = 0; i < mesh->vertex_index_count; ++i) {
+		u32 index = mesh->vertex_indices[i];
+		u32 uv_index = mesh->uv_indices[i];
+		u32 normal_index = mesh->normal_indices[i];
+
+		v2 current_uv = mesh->uv[uv_index];
+		uv[index] = current_uv;
+		v3 current_normal = mesh->normals[normal_index];
+		normals[index] = current_normal;
+	}
+
+	list_free(mesh->uv, mesh->uv_count);
+	list_free(mesh->normals, mesh->normal_count);
+
+	mesh->uv = uv;
+	mesh->uv_count = uv_count;
+	mesh->normals = normals;
+	mesh->normal_count = normal_count;
+}
+
+i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
 	i32 result = NoError;
 	mesh_initialize(mesh);
 	Buffer buffer = {0};	// Buffer to store the wavefront object contents in
@@ -96,6 +123,9 @@ i32 load_mesh(const char* path, Mesh* mesh) {
 			list_push(mesh->normal_indices, mesh->normal_index_count, y[1] - 1);
 			list_push(mesh->normal_indices, mesh->normal_index_count, y[2] - 1);
 		}
+	}
+	if (sort_mesh) {
+		mesh_sort_indices(mesh);
 	}
 done:
 	buffer_free(&buffer);	// The buffer data is parsed and loaded into the mesh data structure, therefore it is not needed anymore

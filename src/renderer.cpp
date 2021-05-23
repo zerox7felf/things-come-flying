@@ -11,6 +11,7 @@
 
 #include "common.hpp"
 #include "mesh.hpp"
+#include "image.hpp"
 #include "renderer.hpp"
 
 mat4 projection;
@@ -19,6 +20,10 @@ mat4 model;
 
 u32 basic_shader = 0;
 u32 diffuse_shader = 0;
+
+// All of this is temporary
+u32 earth_texture = 0;
+Image earth_source_texture = {0};
 Model cube_model = {0};
 Mesh sphere_mesh = {0};
 Model sphere_model = {0};
@@ -97,6 +102,7 @@ static const char* frag_source_code =
 static void opengl_initialize();
 static i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out);
 static i32 shader_compile_from_file(const char* path, u32* program_out);
+static i32 upload_texture(Image* image, u32* texture_id);
 static i32 upload_model(Model* model, float* vertices, u32 vertex_count);
 static i32 upload_model(Model* model, Mesh* mesh);
 static void unload_model(Model* model);
@@ -181,6 +187,23 @@ done:
 	return result;
 }
 
+i32 upload_texture(Image* image, u32* texture_id) {
+	i32 result = NoError;
+	i32 texture_format = image->bytes_per_pixel == 4 ? GL_RGBA : GL_RGB;
+
+	glGenTextures(1, texture_id);
+	glBindTexture(GL_TEXTURE_2D, *texture_id);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, texture_format, image->width, image->height, 0, texture_format, GL_UNSIGNED_BYTE, image->buffer);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return result;
+}
+
 i32 upload_model(Model* model, float* vertices, u32 vertex_count) {
 	model->draw_count = vertex_count / 3;
 
@@ -254,8 +277,10 @@ i32 renderer_initialize() {
 
 	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
 	shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
-	load_mesh("resource/mesh/sphere.obj", &sphere_mesh);
+	load_mesh("resource/mesh/sphere.obj", &sphere_mesh, 1);	// TODO(lucas): Fix shared vertex problem
 	upload_model(&sphere_model, &sphere_mesh);
+	load_image_from_file("resource/texture/2k_earth_daymap.png", &earth_source_texture);
+	upload_texture(&earth_source_texture, &earth_texture);
 	return 0;
 }
 
@@ -310,6 +335,9 @@ void render_mesh(v3 position, v3 rotation, v3 size) {
 	glEnableVertexAttribArray(1);	// uv coordinates
 	glEnableVertexAttribArray(2);	// normals
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, earth_texture);
+
 	glDrawElements(GL_TRIANGLES, model->draw_count, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
@@ -324,6 +352,8 @@ void render_mesh(v3 position, v3 rotation, v3 size) {
 void renderer_destroy() {
 	unload_model(&sphere_model);
 	unload_mesh(&sphere_mesh);
+	unload_image(&earth_source_texture);
+	glDeleteTextures(1, &earth_texture);
 	glDeleteVertexArrays(1, &cube_model.vao);
 	glDeleteVertexArrays(1, &cube_model.vbo);
 	glDeleteShader(basic_shader);

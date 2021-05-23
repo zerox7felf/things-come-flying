@@ -25,7 +25,9 @@ typedef struct Mesh {
 	u32 normal_index_count;
 } Mesh;
 
-i32 load_mesh(const char* path, Mesh* mesh);
+i32 mesh_sort_indices(Mesh* mesh);
+
+i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh);
 
 void unload_mesh(Mesh* mesh);
 
