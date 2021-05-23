@@ -4,9 +4,11 @@
 #include "matrix_math.hpp"
 #include "renderer.hpp"
 #include "engine.hpp"	// To get access to the mouse cursor
+#include "window.hpp"
 #include "camera.hpp"
 
 #define mouse_sensitivity 0.05f
+#define move_speed 7.5f
 
 Camera camera;
 static double last_x = 0.0f;
@@ -44,10 +46,23 @@ void camera_update() {
 	}
 
 	v3 camera_dir = V3(
-		cosf(to_radians(camera.yaw)) * cosf(to_radians(camera.pitch)),
-		sinf(to_radians(camera.pitch)),
-		sinf(to_radians(camera.yaw)) * cosf(to_radians(camera.pitch))
+		cos(to_radians(camera.yaw)) * cos(to_radians(camera.pitch)),
+		sin(to_radians(camera.pitch)),
+		sin(to_radians(camera.yaw)) * cos(to_radians(camera.pitch))
 	);
+
+	if (key_down[GLFW_KEY_W]) {
+		camera.pos = camera.pos + camera.forward * engine.delta_time * move_speed;
+	}
+	if (key_down[GLFW_KEY_S]) {
+		camera.pos = camera.pos - camera.forward * engine.delta_time * move_speed;
+	}
+	if (key_down[GLFW_KEY_A]) {
+		camera.pos = camera.pos - camera.right * engine.delta_time * move_speed;
+	}
+	if (key_down[GLFW_KEY_D]) {
+		camera.pos = camera.pos + camera.right * engine.delta_time * move_speed;
+	}
 
 	camera.forward = normalize(camera_dir);
 	camera.right = normalize(cross_product(camera.forward, V3(0.0f, 1.0f, 0.0f)));

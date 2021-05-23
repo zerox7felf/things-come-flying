@@ -2,7 +2,7 @@
 
 include config.mk
 
-all: prepare compile
+all: prepare compile run
 
 prepare:
 	mkdir -p ${BUILD_DIR}

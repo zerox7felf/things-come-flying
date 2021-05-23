@@ -18,7 +18,7 @@
 static void mesh_initialize(Mesh* mesh);
 
 void mesh_initialize(Mesh* mesh) {
-#if 1
+#if 0
 	memset(mesh, 0, sizeof(Mesh));
 #else
 	mesh->vertices = NULL;
@@ -61,12 +61,13 @@ i32 mesh_sort_indices(Mesh* mesh) {
 	mesh->uv_count = uv_count;
 	mesh->normals = normals;
 	mesh->normal_count = normal_count;
+	return NoError;
 }
 
 i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
 	i32 result = NoError;
 	mesh_initialize(mesh);
-	Buffer buffer = {0};	// Buffer to store the wavefront object contents in
+	Buffer buffer = Buffer();	// Buffer to store the wavefront object contents in
 	if (read_file(path, &buffer) != NoError) {
 		return Error;
 	}
@@ -76,23 +77,23 @@ i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
 
 	// printf("Parsing object file: %s, size: %i\n", path, buffer.size);
 	while (1) {
-		safe_scanf(scan_status, iterator, "%s\n", line);
+		safe_scanf(scan_status, iterator, "%s", line);
 		if (scan_status == EOF) {
 			break;
 		}
 		if (!strncmp(line, "v", MAX_LINE_SIZE)) {
 			v3 vertex;
-			safe_scanf(scan_status, iterator, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+			safe_scanf(scan_status, iterator, "%f %f %f", &vertex.x, &vertex.y, &vertex.z);
 			list_push(mesh->vertices, mesh->vertex_count, vertex);
 		}
 		else if (!strncmp(line, "vt", MAX_LINE_SIZE)) {
 			v2 uv;
-			safe_scanf(scan_status, iterator, "%f %f\n", &uv.x, &uv.y);
+			safe_scanf(scan_status, iterator, "%f %f", &uv.x, &uv.y);
 			list_push(mesh->uv, mesh->uv_count, uv);
 		}
 		else if (!strncmp(line, "vn", MAX_LINE_SIZE)) {
 			v3 normal;
-			safe_scanf(scan_status, iterator, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+			safe_scanf(scan_status, iterator, "%f %f %f", &normal.x, &normal.y, &normal.z);
 			list_push(mesh->normals, mesh->normal_count, normal);
 		}
 		else if (!strncmp(line, "f", MAX_LINE_SIZE)) {
@@ -119,9 +120,9 @@ i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
 			list_push(mesh->uv_indices, mesh->uv_index_count, y[1] - 1);
 			list_push(mesh->uv_indices, mesh->uv_index_count, y[2] - 1);
 
-			list_push(mesh->normal_indices, mesh->normal_index_count, y[0] - 1);
-			list_push(mesh->normal_indices, mesh->normal_index_count, y[1] - 1);
-			list_push(mesh->normal_indices, mesh->normal_index_count, y[2] - 1);
+			list_push(mesh->normal_indices, mesh->normal_index_count, z[0] - 1);
+			list_push(mesh->normal_indices, mesh->normal_index_count, z[1] - 1);
+			list_push(mesh->normal_indices, mesh->normal_index_count, z[2] - 1);
 		}
 	}
 	if (sort_mesh) {

@@ -21,9 +21,11 @@ mat4 model;
 u32 basic_shader = 0;
 u32 diffuse_shader = 0;
 
-// All of this is temporary
+// All of this is temporary. TODO(lucas): Create a resource manager.
 u32 earth_texture = 0;
+u32 sun_texture = 0;
 Image earth_source_texture = {0};
+Image sun_source_texture = {0};
 Model cube_model = {0};
 Mesh sphere_mesh = {0};
 Model sphere_model = {0};
@@ -105,7 +107,7 @@ static i32 upload_texture(Image* image, u32* texture_id);
 static i32 upload_model(Model* model, float* vertices, u32 vertex_count);
 static i32 upload_model(Model* model, Mesh* mesh);
 static void unload_model(Model* model);
-static void store_attribute(Model* model, u32 attribute_index, u32 count, u32 size, void* data);
+static void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, void* data);
 
 i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out) {
 	i32 result = NoError;
@@ -244,7 +246,7 @@ void unload_model(Model* model) {
 	glDeleteBuffers(1, &model->ebo);
 }
 
-void store_attribute(Model* model, u32 attribute_index, u32 count, u32 size, void* data) {
+void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, void* data) {
 	glEnableVertexAttribArray(attribute_index);
 	glGenBuffers(1, &model->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, model->vbo);
@@ -262,6 +264,9 @@ void opengl_initialize() {
 	glDepthFunc(GL_LESS);
 	glAlphaFunc(GL_GREATER, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_TEXTURE_GEN_S);
+	glEnable(GL_TEXTURE_GEN_R);
+	glEnable(GL_TEXTURE_GEN_T);
 }
 
 i32 renderer_initialize() {
@@ -276,13 +281,16 @@ i32 renderer_initialize() {
 
 	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
 	shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
-	load_mesh("resource/mesh/sphere.obj", &sphere_mesh, 1);	// TODO(lucas): Fix shared vertex problem
+	load_mesh("resource/mesh/sphere.obj", &sphere_mesh, 1);
 	upload_model(&sphere_model, &sphere_mesh);
 	load_image_from_file("resource/texture/2k_earth_daymap.png", &earth_source_texture);
 	upload_texture(&earth_source_texture, &earth_texture);
+	load_image_from_file("resource/texture/8k_sun.png", &sun_source_texture);
+	upload_texture(&sun_source_texture, &sun_texture);
 	return 0;
 }
 
+// NOTE(lucas): Deprecated
 void render_cube(v3 position, v3 rotation, v3 size) {
 	u32 handle = diffuse_shader;
 	glUseProgram(handle);
@@ -310,7 +318,7 @@ void render_cube(v3 position, v3 rotation, v3 size) {
 	glUseProgram(0);
 }
 
-void render_mesh(v3 position, v3 rotation, v3 size) {
+void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, float emission) {
 	u32 handle = diffuse_shader;
 	glUseProgram(handle);
 
@@ -325,6 +333,7 @@ void render_mesh(v3 position, v3 rotation, v3 size) {
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+	glUniform1f(glGetUniformLocation(handle, "emission"), emission);
 
 	Model* model = &sphere_model;
 
@@ -335,7 +344,7 @@ void render_mesh(v3 position, v3 rotation, v3 size) {
 	glEnableVertexAttribArray(2);	// normals
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, earth_texture);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
 
 	glDrawElements(GL_TRIANGLES, model->draw_count, GL_UNSIGNED_INT, 0);
 
@@ -352,7 +361,10 @@ void renderer_destroy() {
 	unload_model(&sphere_model);
 	unload_mesh(&sphere_mesh);
 	unload_image(&earth_source_texture);
+	unload_image(&sun_source_texture);
 	glDeleteTextures(1, &earth_texture);
+	glDeleteTextures(1, &sun_texture);
+
 	glDeleteVertexArrays(1, &cube_model.vao);
 	glDeleteVertexArrays(1, &cube_model.vbo);
 	glDeleteShader(basic_shader);

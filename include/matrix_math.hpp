@@ -33,6 +33,36 @@ inline v3 operator+(v3 a, v3 b) {
 	return result;
 }
 
+inline v3 operator-(v3 a, v3 b) {
+	v3 result = a;
+
+	result.x -= b.x;
+	result.y -= b.y;
+	result.z -= b.z;
+
+	return result;
+}
+
+inline v3 operator*(v3 a, v3 b) {
+	v3 result = a;
+
+	result.x *= b.x;
+	result.y *= b.y;
+	result.z *= b.z;
+
+	return result;
+}
+
+inline v3 operator*(v3 a, float scalar) {
+	v3 result = a;
+
+	result.x *= scalar;
+	result.y *= scalar;
+	result.z *= scalar;
+
+	return result;
+}
+
 inline mat4 mat4d(float diagonal);
 
 inline mat4 translate(v3 t);

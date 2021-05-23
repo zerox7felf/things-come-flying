@@ -44,8 +44,8 @@ typedef union v2 {
 } v2;
 
 typedef struct Buffer {
-	char* data;
-	i32 size;
+	char* data = NULL;
+	i32 size = 0;
 } Buffer;
 
 #define V2(X, Y) ((v2) {{.x = X, .y = Y, }})

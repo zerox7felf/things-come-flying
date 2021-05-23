@@ -21,7 +21,7 @@ void engine_initialize(Engine* engine) {
 	engine->total_time = 0;
 	engine->mouse_x = 0;
 	engine->mouse_y = 0;
-	camera_initialize(V3(0, 0, 0));
+	camera_initialize(V3(13, 3, 9));
 }
 
 i32 engine_run(Engine* engine) {
@@ -51,10 +51,10 @@ i32 engine_run(Engine* engine) {
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
 
-		render_mesh(V3(0, 0, -5), V3(0, angle, 0), V3(3, 3, 3));
-		render_mesh(V3(0, 0, 5), V3(0, 0, angle), V3(2, 2, 2));
+		render_mesh(V3(0, 0, -8), V3(0, angle, 0), V3(1, 1, 1), 1, 0.0f);	// TODO(lucas): Temporary, remove and replace with a decently proper scene managemenet/animation system
+		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), 2, 1.0f);
 
-		angle += 10 * engine->delta_time;
+		angle += 5 * engine->delta_time;
 
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);

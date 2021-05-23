@@ -20,7 +20,7 @@ i32 renderer_initialize();
 
 void render_cube(v3 position, v3 rotation, v3 size);
 
-void render_mesh(v3 position, v3 rotation, v3 size);
+void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, float emission);
 
 void renderer_destroy();
 
