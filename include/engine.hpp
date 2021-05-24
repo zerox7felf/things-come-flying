@@ -5,6 +5,7 @@
 
 #include "common.hpp"
 #include "memory.hpp"
+#include "resource.hpp"
 #include "matrix_math.hpp"
 
 typedef struct Engine {
@@ -12,6 +13,7 @@ typedef struct Engine {
 	u8 animation_playing;
 	float delta_time;
 	float total_time;
+	float time_scale;
 	double mouse_x;
 	double mouse_y;
 } Engine;

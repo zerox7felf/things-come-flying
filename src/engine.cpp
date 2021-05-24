@@ -16,9 +16,10 @@ static i32 engine_run(Engine* engine);
 
 void engine_initialize(Engine* engine) {
 	engine->is_running = 1;
-	engine->animation_playing = 0;
+	engine->animation_playing = 1;
 	engine->delta_time = 0;
 	engine->total_time = 0;
+	engine->time_scale = 1.0f;
 	engine->mouse_x = 0;
 	engine->mouse_y = 0;
 	camera_initialize(V3(13, 3, 9));
@@ -28,6 +29,7 @@ i32 engine_run(Engine* engine) {
 	float angle = 0.0f;
 	struct timeval now = {0};
 	struct timeval prev = {0};
+	u8 follow_guy = 0;
 	while (engine->is_running && window_poll_events() >= 0) {
 		prev = now;
 		gettimeofday(&now, NULL);
@@ -36,25 +38,65 @@ i32 engine_run(Engine* engine) {
 			engine->delta_time = MAX_DT;
 		}
 		if (engine->animation_playing) {
-			engine->total_time += engine->delta_time;
+			engine->total_time += engine->delta_time * engine->time_scale;
 		}
-		if (key_down[GLFW_KEY_SPACE]) {
+		if (key_pressed[GLFW_KEY_SPACE]) {
 			engine->animation_playing = !engine->animation_playing;
 		}
-		if (key_down[GLFW_KEY_ESCAPE]) {
+		if (key_pressed[GLFW_KEY_ESCAPE]) {
 			engine->is_running = 0;
 		}
-		if (key_down[GLFW_KEY_F11]) {
+		if (key_pressed[GLFW_KEY_F11]) {
 			window_toggle_fullscreen();
+		}
+		if (key_pressed[GLFW_KEY_1]) {
+			engine->time_scale -= 0.025f;
+			fprintf(stdout, "Time scale: %g\n", engine->time_scale);
+		}
+		if (key_pressed[GLFW_KEY_2]) {
+			engine->time_scale += 0.05f;
+			fprintf(stdout, "Time scale: %g\n", engine->time_scale);
+		}
+		if (key_pressed[GLFW_KEY_3]) {
+			engine->time_scale = 1;
+			fprintf(stdout, "Reset time scale: %g\n", engine->time_scale);
+		}
+		if (key_pressed[GLFW_KEY_F]) {
+			follow_guy = !follow_guy;
 		}
 
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
 
-		render_mesh(V3(0, 0, -8), V3(0, angle, 0), V3(1, 1, 1), 1, 0.0f);	// TODO(lucas): Temporary, remove and replace with a decently proper scene managemenet/animation system
-		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), 2, 1.0f);
+		v3 alien_pos = V3(35 * cos(engine->total_time * 0.85f), 2 * cos(engine->total_time * 0.85f), 35 * sin(engine->total_time * 0.85f));
+		v3 alien_size = V3(1.5f, 1.5f, 1.5f);
 
-		angle += 5 * engine->delta_time;
+		v3 earth_pos = V3(20 * cos(engine->total_time), 0, 20 * sin(engine->total_time));
+		v3 earth_size = alien_size * 0.5f;
+
+		v3 moon_pos = earth_pos + V3(4 * cos(engine->total_time), 0, 4 * sin(engine->total_time));
+		v3 moon_size = earth_size * 0.5f;
+
+		v3 guy_pos = moon_pos + V3(1 * cos(2.5f * engine->total_time), 0, 1 * sin(2.5f * engine->total_time));
+		v3 guy_size = moon_size * 0.5f;
+
+		if (follow_guy) {
+			camera.pos = guy_pos - camera.forward * 1.5f;
+		}
+
+		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, TEXTURE_ALIEN, MESH_SPHERE, 0.0f);
+		render_mesh(earth_pos, V3(20, angle, 0), earth_size, TEXTURE_EARTH, MESH_SPHERE, 0.0f);
+		render_mesh(moon_pos, V3(0, 0, 0), moon_size, TEXTURE_MOON, MESH_SPHERE, 0.0f);
+		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, TEXTURE_MONSTER, MESH_MONSTER, 0.0f);
+
+		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), TEXTURE_SUN, MESH_SPHERE, 1.0f);
+#if 0
+		render_mesh(earth_pos, V3(0, angle, 0), V3(0.4f, 0.4f, 0.4f), TEXTURE_EARTH, MESH_SPHERE, 0.0f);
+		render_mesh(V3(-5, 1, -15), V3(0, -angle * 1.15f, 0), V3(1.25f, 1.25f, 1.25f), TEXTURE_ALIEN, MESH_SPHERE, 0.0f);
+		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), TEXTURE_SUN, MESH_SPHERE, 1.0f);
+		render_mesh(V3(-16 + angle, 4, 7 - (angle / 2)), V3(angle * 4, angle, -angle), V3(0.1f, 0.1f, 0.1f), TEXTURE_MONSTER, MESH_MONSTER, 0.0f);
+#endif
+		angle += 2.5f * engine->delta_time;
 
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);

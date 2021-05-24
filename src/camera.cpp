@@ -8,7 +8,7 @@
 #include "camera.hpp"
 
 #define mouse_sensitivity 0.05f
-#define move_speed 7.5f
+#define move_speed 12.5f
 
 Camera camera;
 static double last_x = 0.0f;
