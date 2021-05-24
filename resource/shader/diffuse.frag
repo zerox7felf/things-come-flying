@@ -19,8 +19,8 @@ vec3 draw_surface_normal(vec3 color) {
 	return brightness * color * surface_normal;
 }
 
-vec4 draw_texture() {
-	return texture(tex, texture_coord);
+vec3 draw_texture() {
+	return texture(tex, texture_coord).rgb;
 }
 
 vec3 diffuse(float emit) {
@@ -33,10 +33,10 @@ vec3 diffuse(float emit) {
 }
 
 vec3 ambient() {
-	float ambient_strength = 0.05f;
+	float ambient_strength = 0.01f;
 	return ambient_strength * light_color;
 }
 
 void main() {
-	out_color = draw_texture() * vec4(ambient() + diffuse(emission), 1);
+	out_color = vec4(ambient() + diffuse(emission) * draw_texture(), 1);
 }
