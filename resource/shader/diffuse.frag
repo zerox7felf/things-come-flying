@@ -36,7 +36,7 @@ vec3 gloss(float shine, vec3 light_delta, vec3 tex_color) {
     vec3 reflection = normalize(2 * dot(light_delta, surface_normal) * surface_normal - normalize(light_delta));
     float brightness = pow(dot(reflection, normalize(camera_pos)), shine);
     brightness = clamp(brightness, 0, 1);
-    return brightness * light_color * (tex_color / 2 + 0.5);
+    return brightness * light_color * tex_color;
 }
 
 vec3 ambient(vec3 tex_color) {
