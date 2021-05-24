@@ -20,8 +20,10 @@ mat4 model;
 
 Render_state render_state;
 
-u32 basic_shader = 0;
-u32 diffuse_shader = 0;
+u32 basic_shader = 0,
+	diffuse_shader = 0,
+	skybox_shader = 0;
+Model cube_model;
 
 #define SHADER_ERROR_BUFFER_SIZE 512
 
@@ -93,11 +95,12 @@ static const char* frag_source_code =
 	"	out_color = vec4(1, 0, 0, 1);\n"
 	"}\n";
 
-static void opengl_initialize();
+static void opengl_initialize(Render_state* renderer);
 static i32 render_state_initialize(Render_state* renderer);
 static i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out);
 static i32 shader_compile_from_file(const char* path, u32* program_out);
-static i32 upload_texture(Image* image, u32* texture_id);
+static i32 upload_texture(Render_state* renderer, Image* image, u32* texture_id);
+static i32 upload_skybox_texture(Render_state* renderer, u32 skybox_id, u32* texture_id);
 static i32 upload_model(Model* model, float* vertices, u32 vertex_count);
 static i32 upload_model(Model* model, Mesh* mesh);
 static void unload_model(Model* model);
@@ -183,7 +186,7 @@ done:
 	return result;
 }
 
-i32 upload_texture(Image* image, u32* texture_id) {
+i32 upload_texture(Render_state* renderer, Image* image, u32* texture_id) {
 	i32 result = NoError;
 	i32 texture_format = image->bytes_per_pixel == 4 ? GL_RGBA : GL_RGB;
 
@@ -198,6 +201,42 @@ i32 upload_texture(Image* image, u32* texture_id) {
 	glTexImage2D(GL_TEXTURE_2D, 0, texture_format, image->width, image->height, 0, texture_format, GL_UNSIGNED_BYTE, image->buffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	return result;
+}
+
+i32 upload_mipmap_texture(Render_state* renderer, Image* image, u32* texture_id) {
+	i32 result = NoError;
+	i32 texture_format = image->bytes_per_pixel == 4 ? GL_RGBA : GL_RGB;
+
+	glGenTextures(1, texture_id);
+	glBindTexture(GL_TEXTURE_2D, *texture_id);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	gluBuild2DMipmaps(GL_TEXTURE_2D, texture_format, image->width, image->height, texture_format, GL_UNSIGNED_BYTE, image->buffer);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return result;
+}
+
+i32 upload_skybox_texture(Render_state* renderer, u32 skybox_id, u32* texture_id) {
+	glGenTextures(1, texture_id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, *texture_id);
+
+	for (i32 i = 0; i < 6; i++) {
+		Image* image = &renderer->resources.skybox_images[i + skybox_id];
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, image->width, image->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->buffer);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	return NoError;
 }
 
 i32 upload_model(Model* model, float* vertices, u32 vertex_count) {
@@ -254,39 +293,54 @@ void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, voi
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void opengl_initialize() {
+void opengl_initialize(Render_state* renderer) {
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
 	glAlphaFunc(GL_GREATER, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_GEN_S);
 	glEnable(GL_TEXTURE_GEN_R);
 	glEnable(GL_TEXTURE_GEN_T);
+	glEnable(GL_TEXTURE_CUBE_MAP_EXT);
+
+	renderer->depth_func = GL_LESS;
+	glDepthFunc(renderer->depth_func);
 }
 
 i32 render_state_initialize(Render_state* renderer) {
+	opengl_initialize(renderer);
 	Resources* res = &renderer->resources;
 	renderer->texture_count = 0;
 	renderer->model_count = 0;
+	renderer->cube_map_count = 0;
+
 	resources_initialize(res);
 	resources_load(res);
 
 	for (u32 i = 0; i < res->image_count; i++) {
 		Image* image = &res->images[i];
 		u32* texture_id = &renderer->textures[i];
-		upload_texture(image, texture_id);
+		upload_mipmap_texture(renderer, image, texture_id);
 		renderer->texture_count++;
 	}
+
+	for (u32 i = 0; i < res->skybox_count / 6; i++) {
+		u32* cube_map_id = &renderer->cube_maps[i];
+		upload_skybox_texture(renderer, i * 6, cube_map_id);
+		renderer->cube_map_count++;
+	}
+
 	for (u32 i = 0; i < res->mesh_count; i++) {
 		Mesh* mesh = &res->meshes[i];
 		Model* model = &renderer->models[i];
 		upload_model(model, mesh);
 		renderer->model_count++;
 	}
+
+	upload_model(&cube_model, cube_vertices, ARR_SIZE(cube_vertices));
 	return NoError;
 }
 
@@ -296,14 +350,13 @@ i32 renderer_initialize() {
 		fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(glew_error));
 		return Error;
 	}
-	opengl_initialize();
 	view = mat4d(1.0f);
 	model = mat4d(1.0f);
 
 	render_state_initialize(&render_state);
-
 	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
 	shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
+	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
 	return 0;
 }
 
@@ -348,6 +401,36 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, u32 mesh_id,
 	glUseProgram(0);
 }
 
+void render_skybox(u32 skybox_id, float brightness) {
+	Render_state* renderer = &render_state;
+	u32 texture = renderer->cube_maps[skybox_id];
+
+	u32 handle = skybox_shader;
+	glUseProgram(handle);
+
+	mat4 view_matrix = view;
+	view_matrix.elements[3][0] = 0;
+	view_matrix.elements[3][1] = 0;
+	view_matrix.elements[3][2] = 0;
+
+	glDepthFunc(GL_LEQUAL);
+
+	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view_matrix);
+	glUniform1f(glGetUniformLocation(handle, "brightness"), brightness);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+
+	glBindVertexArray(cube_model.vao);
+	glDrawArrays(GL_TRIANGLES, 0, cube_model.draw_count);
+	glBindVertexArray(0);
+
+	glDepthFunc(renderer->depth_func);
+
+	glUseProgram(0);
+}
+
 void renderer_destroy() {
 	glDeleteShader(basic_shader);
 	glDeleteShader(diffuse_shader);
@@ -358,10 +441,19 @@ void renderer_destroy() {
 		unload_texture(texture_id);
 	}
 	renderer->texture_count = 0;
+
+	for (u32 i = 0; i < renderer->cube_map_count; i++) {
+		u32* cube_map_id = &renderer->cube_maps[i];
+		unload_texture(cube_map_id);
+	}
+	renderer->cube_map_count = 0;
+
 	for (u32 i = 0; i < renderer->model_count; i++) {
 		Model* model = &renderer->models[i];
 		unload_model(model);
 	}
+
 	renderer->model_count = 0;
 	resources_unload(&render_state.resources);
+	unload_model(&cube_model);
 }

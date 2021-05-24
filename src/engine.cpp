@@ -22,7 +22,7 @@ void engine_initialize(Engine* engine) {
 	engine->time_scale = 1.0f;
 	engine->mouse_x = 0;
 	engine->mouse_y = 0;
-	camera_initialize(V3(13, 3, 9));
+	camera_initialize(V3(0, 0, -14));
 }
 
 i32 engine_run(Engine* engine) {
@@ -64,9 +64,12 @@ i32 engine_run(Engine* engine) {
 		if (key_pressed[GLFW_KEY_F]) {
 			follow_guy = !follow_guy;
 		}
+		if (key_pressed[GLFW_KEY_R]) {
+			engine_initialize(engine);
+			continue;
+		}
 
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
-		camera_update();
 
 		v3 alien_pos = V3(35 * cos(engine->total_time * 0.85f), 2 * cos(engine->total_time * 0.85f), 35 * sin(engine->total_time * 0.85f));
 		v3 alien_size = V3(1.5f, 1.5f, 1.5f);
@@ -87,16 +90,15 @@ i32 engine_run(Engine* engine) {
 		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, TEXTURE_ALIEN, MESH_SPHERE, 0.0f);
 		render_mesh(earth_pos, V3(20, angle, 0), earth_size, TEXTURE_EARTH, MESH_SPHERE, 0.0f);
 		render_mesh(moon_pos, V3(0, 0, 0), moon_size, TEXTURE_MOON, MESH_SPHERE, 0.0f);
-		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, TEXTURE_MONSTER, MESH_MONSTER, 0.0f);
+		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, TEXTURE_GUY, MESH_GUY, 0.0f);
 
 		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), TEXTURE_SUN, MESH_SPHERE, 1.0f);
-#if 0
-		render_mesh(earth_pos, V3(0, angle, 0), V3(0.4f, 0.4f, 0.4f), TEXTURE_EARTH, MESH_SPHERE, 0.0f);
-		render_mesh(V3(-5, 1, -15), V3(0, -angle * 1.15f, 0), V3(1.25f, 1.25f, 1.25f), TEXTURE_ALIEN, MESH_SPHERE, 0.0f);
-		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), TEXTURE_SUN, MESH_SPHERE, 1.0f);
-		render_mesh(V3(-16 + angle, 4, 7 - (angle / 2)), V3(angle * 4, angle, -angle), V3(0.1f, 0.1f, 0.1f), TEXTURE_MONSTER, MESH_MONSTER, 0.0f);
-#endif
-		angle += 2.5f * engine->delta_time;
+
+		angle = 2.5f * engine->total_time;
+
+		camera_update();
+
+		render_skybox(CUBE_MAP_SPACE, 0.9f);
 
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);
