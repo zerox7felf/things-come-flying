@@ -7,7 +7,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/2k_earth_daymap.png",
 	"resource/texture/8k_sun.png",
 	"resource/texture/4k_alien.png",
-	"resource/texture/8k_moon.png",
+	"resource/texture/4k_moon.png",
 	"resource/texture/monster.png",
 };
 
