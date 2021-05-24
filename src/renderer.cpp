@@ -13,6 +13,7 @@
 #include "mesh.hpp"
 #include "image.hpp"
 #include "renderer.hpp"
+#include "camera.hpp"
 
 mat4 projection;
 mat4 view;
@@ -318,7 +319,7 @@ void render_cube(v3 position, v3 rotation, v3 size) {
 	glUseProgram(0);
 }
 
-void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, float emission) {
+void render_mesh(v3 position, v3 rotation, v3 size, Material material) {
 	u32 handle = diffuse_shader;
 	glUseProgram(handle);
 
@@ -333,7 +334,9 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, float emissi
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
-	glUniform1f(glGetUniformLocation(handle, "emission"), emission);
+	glUniform1f(glGetUniformLocation(handle, "emission"), material.emission);
+	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
+    glUniform3f(glGetUniformLocation(handle, "camera_pos"), camera.pos.x, camera.pos.y, camera.pos.z);
 
 	Model* model = &sphere_model;
 
@@ -344,7 +347,7 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, float emissi
 	glEnableVertexAttribArray(2);	// normals
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glBindTexture(GL_TEXTURE_2D, material.texture_id);
 
 	glDrawElements(GL_TRIANGLES, model->draw_count, GL_UNSIGNED_INT, 0);
 

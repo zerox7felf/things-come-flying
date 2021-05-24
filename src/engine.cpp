@@ -26,6 +26,7 @@ void engine_initialize(Engine* engine) {
 
 i32 engine_run(Engine* engine) {
 	float angle = 0.0f;
+    float shine = 1.0f;
 	struct timeval now = {0};
 	struct timeval prev = {0};
 	while (engine->is_running && window_poll_events() >= 0) {
@@ -47,12 +48,32 @@ i32 engine_run(Engine* engine) {
 		if (key_down[GLFW_KEY_F11]) {
 			window_toggle_fullscreen();
 		}
+        if (key_down[GLFW_KEY_UP]) {
+            shine += 0.1;
+            printf("Shine: %f\n", shine);
+        }
+        if (key_down[GLFW_KEY_DOWN]) {
+            shine -= 0.1;
+            printf("Shine: %f\n", shine);
+        }
 
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
 
-		render_mesh(V3(0, 0, -8), V3(0, angle, 0), V3(1, 1, 1), 1, 0.0f);	// TODO(lucas): Temporary, remove and replace with a decently proper scene managemenet/animation system
-		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), 2, 1.0f);
+		//render_mesh(V3(0, 0, -8), V3(0, angle, 0), V3(1, 1, 1), 1, 0.0f);	// TODO(lucas): Temporary, remove and replace with a decently proper scene managemenet/animation system
+		//render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), 2, 1.0f);
+
+        render_mesh(V3(0, 0, -8), V3(0, angle, 0), V3(1, 1, 1), (Material){
+          .emission = 0.0f,
+          .shininess = shine,
+          .texture_id = 1
+        });
+
+        render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), (Material){
+          .emission = 1.0f,
+          .shininess = 80.0f,
+          .texture_id = 2
+        });
 
 		angle += 5 * engine->delta_time;
 
