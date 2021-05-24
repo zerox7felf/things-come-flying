@@ -84,6 +84,7 @@ i32 window_poll_events() {
 	i32 right_mouse_state = glfwGetMouseButton((GLFWwindow*)win.window, 1);
 	i32 middle_mouse_state = glfwGetMouseButton((GLFWwindow*)win.window, 2);
 
+    // Arcane. Do not touch.
 	(left_mouse_state && !(mouse_state & (1 << 7))) ? mouse_state |= (1 << 6) : (mouse_state &= ~(1 << 6));
 	left_mouse_state ? mouse_state |= (1 << 7) : (mouse_state &= ~(1 << 7));
 	(right_mouse_state && !(mouse_state & (1 << 5))) ? mouse_state |= (1 << 4) : (mouse_state &= ~(1 << 4));

@@ -27,6 +27,7 @@ void engine_initialize(Engine* engine) {
 
 i32 engine_run(Engine* engine) {
 	float angle = 0.0f;
+    float shine = 1.0f;
 	struct timeval now = {0};
 	struct timeval prev = {0};
 	u8 follow_guy = 0;
@@ -49,6 +50,14 @@ i32 engine_run(Engine* engine) {
 		if (key_pressed[GLFW_KEY_F11]) {
 			window_toggle_fullscreen();
 		}
+        if (key_down[GLFW_KEY_UP]) {
+            shine += 0.1;
+            printf("Shine: %f\n", shine);
+        }
+        if (key_down[GLFW_KEY_DOWN]) {
+            shine -= 0.1;
+            printf("Shine: %f\n", shine);
+        }
 		if (key_pressed[GLFW_KEY_1]) {
 			engine->time_scale -= 0.025f;
 			fprintf(stdout, "Time scale: %g\n", engine->time_scale);
@@ -87,19 +96,41 @@ i32 engine_run(Engine* engine) {
 			camera.pos = guy_pos - camera.forward * 1.5f;
 		}
 
-		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, TEXTURE_ALIEN, MESH_SPHERE, 0.0f);
-		render_mesh(earth_pos, V3(20, angle, 0), earth_size, TEXTURE_EARTH, MESH_SPHERE, 0.0f);
-		render_mesh(moon_pos, V3(0, 0, 0), moon_size, TEXTURE_MOON, MESH_SPHERE, 0.0f);
-		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, TEXTURE_GUY, MESH_GUY, 0.0f);
+        render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
+            .emission = 0.0f,
+            .shininess = shine,
+            .texture_id = TEXTURE_EARTH
+        });
 
-		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), TEXTURE_SUN, MESH_SPHERE, 1.0f);
+        render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
+            .emission = 1.0f,
+            .shininess = 80.0f,
+            .texture_id = TEXTURE_SUN
+        });
 
-		angle = 2.5f * engine->total_time;
+		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
+            .emission = 0.0f,
+            .shininess = 120.0f,
+            .texture_id = TEXTURE_ALIEN
+        });
 
+
+		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
+            .emission = 0.0f,
+            .shininess = 1.0f,
+            .texture_id = TEXTURE_MOON
+        });
+
+		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, MESH_GUY, (Material) {
+            .emission = 0.0f,
+            .shininess = 1.0f,
+            .texture_id = TEXTURE_GUY
+        });
+
+		angle += 2.5f * engine->delta_time;
 		camera_update();
 
 		render_skybox(CUBE_MAP_SPACE, 0.9f);
-
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);
 	}

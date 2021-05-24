@@ -66,7 +66,7 @@ void camera_update() {
 
 	camera.forward = normalize(camera_dir);
 	camera.right = normalize(cross_product(camera.forward, V3(0.0f, 1.0f, 0.0f)));
-	camera.up = normalize(cross_product(camera.right, camera.forward));
+	camera.up = normalize(cross_product(camera.right, camera.forward)); // Upwards in local space
 
 	view = look_at(camera.pos, camera.pos + camera.forward, camera.up);
 }

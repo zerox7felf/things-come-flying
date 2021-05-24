@@ -13,6 +13,7 @@
 #include "mesh.hpp"
 #include "image.hpp"
 #include "renderer.hpp"
+#include "camera.hpp"
 
 mat4 projection;
 mat4 view;
@@ -360,9 +361,9 @@ i32 renderer_initialize() {
 	return 0;
 }
 
-void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, u32 mesh_id, float emission) {
+void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
 	Render_state* renderer = &render_state;
-	u32 texture = renderer->textures[texture_id];
+	u32 texture = renderer->textures[material.texture_id];
 	Model* mesh = &renderer->models[mesh_id];
 
 	u32 handle = diffuse_shader;
@@ -379,7 +380,9 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 texture_id, u32 mesh_id,
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
-	glUniform1f(glGetUniformLocation(handle, "emission"), emission);
+	glUniform1f(glGetUniformLocation(handle, "emission"), material.emission);
+	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
+    glUniform3f(glGetUniformLocation(handle, "camera_pos"), camera.pos.x, camera.pos.y, camera.pos.z);
 
 	glBindVertexArray(mesh->vao);
 
