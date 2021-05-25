@@ -25,6 +25,15 @@ typedef uint8_t u8;
 typedef float r32;
 typedef double r64;
 
+typedef union v4 {
+    struct {
+        float x, y, z, w;
+    };
+    struct {
+        float r, g, b, a;
+    };
+} v4;
+
 typedef union v3 {
 	struct {
 		float x, y, z;
@@ -50,6 +59,7 @@ typedef struct Buffer {
 
 #define V2(X, Y) ((v2) {{.x = X, .y = Y, }})
 #define V3(X, Y, Z) ((v3) {{ .x = X, .y = Y, .z = Z, }})
+#define V4(X, Y, Z, W) ((v4) {{ .x = X, .y = Y, .z = Z, .w = W, }})
 
 typedef enum Status_code {
 	NoError = 0,

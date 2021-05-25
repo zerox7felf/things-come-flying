@@ -149,11 +149,13 @@ i32 shader_compile_from_source(const char* vert_source, const char* frag_source,
 	glLinkProgram(program);
 
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &compile_report);
+    #if 0
 	if (!compile_report) {
 		glGetProgramInfoLog(program, SHADER_ERROR_BUFFER_SIZE, NULL, err_log);
 		fprintf(stderr, "shader compile error: %s\n", err_log);
 		goto done;
 	}
+    #endif
 
 	*program_out = program;
 
@@ -356,7 +358,8 @@ i32 renderer_initialize() {
 
 	render_state_initialize(&render_state);
 	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
-	shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
+	//shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
+	shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
 	return 0;
 }
@@ -380,9 +383,16 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+
 	glUniform1f(glGetUniformLocation(handle, "emission"), material.emission);
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
-    glUniform3f(glGetUniformLocation(handle, "camera_pos"), camera.pos.x, camera.pos.y, camera.pos.z);
+	glUniform1f(glGetUniformLocation(handle, "specular_amplitude"), material.specular_amp);
+
+    //glUniform3f(glGetUniformLocation(handle, "camera_pos"), camera.pos.x, camera.pos.y, camera.pos.z);
+    //glUniform3f(glGetUniformLocation(handle, "light_position"), 0.0f, 0.0f, 0.0f);
+	v4 light_position = multiply_mat4_v4(view, V4(0.0f, 0.0f, 0.0f, 1.0f));
+    glUniform3f(glGetUniformLocation(handle, "light_position"), light_position.x, light_position.y, light_position.z);
+    glUniform3f(glGetUniformLocation(handle, "light_color"), 1.0f, 1.0f, 1.0f);
 
 	glBindVertexArray(mesh->vao);
 

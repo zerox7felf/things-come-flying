@@ -71,6 +71,14 @@ inline mat4 translate_mat4(mat4 m, v3 t);
 
 inline mat4 multiply_mat4(mat4 a, mat4 b);
 
+inline v4 multiply_mat4_v4(mat4 a, v4 b);
+
+inline v3 multiply_mat4_v3(mat4 m, v3 a, float* w);
+
+inline v3 v3_from_v4(v4 a);
+
+inline v4 v4_from_v3(v3 a, float w);
+
 inline mat4 scale_mat4(v3 scale);
 
 inline mat4 rotate(float angle, v3 axis);
@@ -159,6 +167,38 @@ inline mat4 multiply_mat4(mat4 a, mat4 b) {
 	}
 #endif
 	return result;
+}
+
+inline v3 multiply_mat4_v3(mat4 m, v3 a, float* w) {
+	v3 result;
+	float x = a.x, y = a.x, z = a.z;
+
+	result.x = x * m.elements[0][0] + y * m.elements[1][0] + z * m.elements[2][0] + *w * m.elements[3][0];
+	result.y = x * m.elements[0][1] + y * m.elements[1][1] + z * m.elements[2][1] + *w * m.elements[3][1];
+	result.z = x * m.elements[0][2] + y * m.elements[1][2] + z * m.elements[2][2] + *w * m.elements[3][2];
+	*w =	   x * m.elements[0][3] + y * m.elements[1][3] + z * m.elements[2][3] + *w * m.elements[3][3];
+
+	return result;
+}
+
+inline v4 multiply_mat4_v4(mat4 m, v4 a) {
+	v4 result;
+	float x = a.x, y = a.x, z = a.z, w = a.w;
+
+	result.x = x * m.elements[0][0] + y * m.elements[1][0] + z * m.elements[2][0] + w * m.elements[3][0];
+	result.y = x * m.elements[0][1] + y * m.elements[1][1] + z * m.elements[2][1] + w * m.elements[3][1];
+	result.z = x * m.elements[0][2] + y * m.elements[1][2] + z * m.elements[2][2] + w * m.elements[3][2];
+	result.w = x * m.elements[0][3] + y * m.elements[1][3] + z * m.elements[2][3] + w * m.elements[3][3];
+
+	return result;
+}
+
+inline v3 v3_from_v4(v4 a) {
+	return V3(a.x, a.y, a.z);
+}
+
+inline v4 v4_from_v3(v3 a, float w) {
+	return V4(a.x, a.y, a.z, w);
 }
 
 inline mat4 scale_mat4(v3 scale) {

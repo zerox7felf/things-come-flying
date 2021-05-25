@@ -16,6 +16,7 @@ typedef struct Model {
 typedef struct Material {
   float emission;
   float shininess;
+  float specular_amp;
   u32 texture_id;
 } Material;
 
