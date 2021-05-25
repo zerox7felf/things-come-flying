@@ -14,9 +14,10 @@ typedef struct Model {
 } Model;
 
 typedef struct Material {
-  float emission;
+  float ambient;
+  float diffuse;
+  float specular;
   float shininess;
-  float specular_amp;
   u32 texture_id;
 } Material;
 

@@ -97,45 +97,51 @@ i32 engine_run(Engine* engine) {
 		}
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
-            .emission = 0.0f,
+            .ambient = 0.05f,
+            .diffuse = 1.0f,
+            .specular = 0.5f,
             .shininess = shine,
-            .specular_amp = 0.5,
             .texture_id = TEXTURE_EARTH
         });
 
         render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
-            .emission = 1.0f,
-            .shininess = 80.0f,
-            .specular_amp = 0.5,
+            .ambient = 1.0f,
+            .diffuse = 0.0f,
+            .specular = 0.5f,
+            .shininess = 10.0f,
             .texture_id = TEXTURE_SUN
         });
 
 		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
-            .emission = 0.0f,
-            .shininess = 120.0f,
-            .specular_amp = 0.5,
+            .ambient = 0.01f,
+            .diffuse = 1.0f,
+            .specular = 0.5f,
+            .shininess = 10.0f,
             .texture_id = TEXTURE_ALIEN
         });
 
 		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
-            .emission = 0.0f,
-            .shininess = 1.0f,
-            .specular_amp = 0.5,
+            .ambient = 0.01f,
+            .diffuse = 1.0f,
+            .specular = 0.5f,
+            .shininess = 10.0f,
             .texture_id = TEXTURE_MOON
         });
 
 		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, MESH_GUY, (Material) {
-            .emission = 0.0f,
+            .ambient = 0.02f,
+            .diffuse = 1.0f,
+            .specular = 0.5f,
             .shininess = 1.0f,
-            .specular_amp = 0.5,
             .texture_id = TEXTURE_GUY
         });
 
-        render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(0.05f, 0.05f, 0.05f), MESH_TEAPOT, (Material) {
-            .emission = 0.0f,
+        render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(1.0f, 1.0f, 1.0f), MESH_CUBE, (Material) {
+            .ambient = 0.1f,
+            .diffuse = 1.0f,
+            .specular = 0.5f,
             .shininess = 10.0f,
-            .specular_amp = 0.5f,
-            .texture_id = TEXTURE_GREEN
+            .texture_id = TEXTURE_MOON
         });
 
 		angle += 2.5f * engine->delta_time;

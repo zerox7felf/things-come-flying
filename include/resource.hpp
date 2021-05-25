@@ -39,7 +39,7 @@ enum Mesh_id {
 	MESH_SPHERE,
 	MESH_CUBE,
 	MESH_GUY,
-    MESH_TEAPOT,
+    MESH_MONKE,
 
 	MAX_MESH,
 };
