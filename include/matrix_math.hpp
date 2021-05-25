@@ -65,6 +65,8 @@ inline v3 operator*(v3 a, float scalar) {
 
 inline mat4 mat4d(float diagonal);
 
+inline mat4 inverse(mat4 a);
+
 inline mat4 translate(v3 t);
 
 inline mat4 translate_mat4(mat4 m, v3 t);
@@ -107,9 +109,9 @@ inline mat4 look_at(v3 eye, v3 center, v3 up);
 
 inline __m128 linear_combine(__m128 a, mat4 b);
 
-inline mat4 transpose(mat4 a);
-
 #endif
+
+inline mat4 transpose(mat4 a);
 
 inline mat4 mat4d(float diagonal) {
 	mat4 result = {0};
@@ -118,6 +120,21 @@ inline mat4 mat4d(float diagonal) {
 	result.elements[1][1] = diagonal;
 	result.elements[2][2] = diagonal;
 	result.elements[3][3] = diagonal;
+
+	return result;
+}
+
+inline mat4 inverse(mat4 a) {
+	mat4 result;
+
+	result.elements[0][0] = a.elements[0][0]; result.elements[0][1] = a.elements[1][0]; result.elements[0][2] = a.elements[2][0]; result.elements[0][3] = 0.0f;
+	result.elements[1][0] = a.elements[0][1]; result.elements[1][1] = a.elements[1][1]; result.elements[1][2] = a.elements[2][1]; result.elements[1][3] = 0.0f;
+	result.elements[2][0] = a.elements[0][2]; result.elements[2][1] = a.elements[1][2]; result.elements[2][2] = a.elements[2][2]; result.elements[2][3] = 0.0f;
+
+	result.elements[3][0] = -(a.elements[3][0] * result.elements[0][0] + a.elements[3][1] * result.elements[1][0] + a.elements[3][2] * result.elements[2][0]);
+	result.elements[3][1] = -(a.elements[3][0] * result.elements[0][1] + a.elements[3][1] * result.elements[1][1] + a.elements[3][2] * result.elements[2][1]);
+	result.elements[3][2] = -(a.elements[3][0] * result.elements[0][2] + a.elements[3][1] * result.elements[1][2] + a.elements[3][2] * result.elements[2][2]);
+	result.elements[3][3] = 1.0f;
 
 	return result;
 }
@@ -356,6 +373,14 @@ inline mat4 transpose(mat4 a) {
 	mat4 result = a;
 
 	_MM_TRANSPOSE4_PS(result.rows[0], result.rows[1], result.rows[2], result.rows[3]);
+
+	return result;
+}
+
+#else
+
+inline transpose(mat4 a) {
+	mat4 result = a;
 
 	return result;
 }
