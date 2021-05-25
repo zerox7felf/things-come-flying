@@ -11,6 +11,7 @@ typedef struct Window  {
 	i32 width;
 	i32 height;
 	u8 fullscreen;
+	framebuffer_change_cb framebuffer_cb;
 	void* window;
 } Window;
 
@@ -28,12 +29,17 @@ void framebuffer_callback(GLFWwindow* window, i32 width, i32 height) {
 		0.02f,	// z near clipping
 		2000.0f // z far clipping
 	);
+	ortho_projection = orthographic(0.0f, win.width, win.height, 0.0f, -1.0f, 1.0f);
+	if (win.framebuffer_cb) {
+		win.framebuffer_cb(width, height);
+	}
 }
 
-i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsync) {
+i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsync, framebuffer_change_cb framebuffer_cb) {
 	win.width = width;
 	win.height = height;
 	win.fullscreen = fullscreen;
+	win.framebuffer_cb = framebuffer_cb;
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

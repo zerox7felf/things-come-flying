@@ -77,8 +77,13 @@ i32 engine_run(Engine* engine) {
 			engine_initialize(engine);
 			continue;
 		}
-
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
+		camera_update();
+
+		renderer_bind_fbo();
+		renderer_clear_fbo();
+
+		render_skybox(CUBE_MAP_SPACE, 0.75f);
 
 		v3 alien_pos = V3(35 * cos(engine->total_time * 0.85f), 2 * cos(engine->total_time * 0.85f), 35 * sin(engine->total_time * 0.85f));
 		v3 alien_size = V3(1.5f, 1.5f, 1.5f);
@@ -144,10 +149,12 @@ i32 engine_run(Engine* engine) {
             .texture_id = TEXTURE_MOON
         });
 
-		angle += 2.5f * engine->delta_time;
-		camera_update();
+		angle = 10 * engine->total_time;
 
-		render_skybox(CUBE_MAP_SPACE, 0.9f);
+		renderer_unbind_fbo();
+
+		render_fbo();
+
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);
 	}
@@ -158,7 +165,7 @@ i32 engine_start() {
 	i32 result = NoError;
 	engine_initialize(&engine);
 
-	if ((result = window_open("Solar System", 800, 600, 0 /* fullscreen */, 0 /* vsync */)) == NoError) {
+	if ((result = window_open("Solar System", 800, 600, 0 /* fullscreen */, 0 /* vsync */, renderer_framebuffer_callback)) == NoError) {
 		renderer_initialize();
 		engine_run(&engine);
 		window_close();

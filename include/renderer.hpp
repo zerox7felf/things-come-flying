@@ -13,6 +13,14 @@ typedef struct Model {
   u32 ebo;
 } Model;
 
+typedef struct Fbo {
+	u32 texture;
+	u32 depth;
+	u32 fbo;
+	i32 width;
+	i32 height;
+} Fbo;
+
 typedef struct Material {
   float ambient;
   float diffuse;
@@ -22,6 +30,7 @@ typedef struct Material {
 } Material;
 
 extern mat4 projection;
+extern mat4 ortho_projection;
 extern mat4 view;
 extern mat4 model;
 
@@ -37,11 +46,22 @@ typedef struct Render_state {
 
 	Resources resources;
 	i32 depth_func;
+	u8 initialized;
 } Render_state;
 
 i32 renderer_initialize();
 
+void renderer_framebuffer_callback(i32 width, i32 height);
+
+void renderer_clear_fbo();
+
+void renderer_bind_fbo();
+
+void renderer_unbind_fbo();
+
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material);
+
+void render_fbo();
 
 void render_skybox(u32 skybox_id, float brightness);
 

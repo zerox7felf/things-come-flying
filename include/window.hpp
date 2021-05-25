@@ -11,7 +11,9 @@ extern i8 mouse_state;
 extern i8 key_down[];
 extern i8 key_pressed[];
 
-i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsync);
+typedef void (*framebuffer_change_cb)(i32 width, i32 height);
+
+i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsync, framebuffer_change_cb framebuffer_cb);
 
 i32 window_width();
 
