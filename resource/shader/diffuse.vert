@@ -13,8 +13,10 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
+uniform mat4 ti_model;	// transposed inverse model matrix
+
 void main() {
-	surface_normal = normalize(mat3(transpose(inverse(model))) * normal);	// I have no idea how this works, but here be surface normal
+	surface_normal = normalize(mat3(ti_model) * normal);	// I have no idea how this works, but here be surface normal
 	texture_coord = vec2(uv.x, 1 - uv.y);
 	frag_position = vec3(model * vec4(position, 1));
 	gl_Position = projection * view * model * vec4(position, 1);
