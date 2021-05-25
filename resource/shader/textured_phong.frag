@@ -1,4 +1,4 @@
-// diffuse.frag
+// textured_phong.frag
 
 #version 330 core
 
@@ -13,7 +13,7 @@ uniform float emission;
 uniform float shininess;
 uniform float specular_amplitude;
 
-uniform vec3 light_position; // light position in viewspace
+uniform vec3 light_position; // light position in *viewspace* (ofc. since all our shading calcs are done there)
 uniform vec3 light_color;
 
 // Calculates ambient brightness

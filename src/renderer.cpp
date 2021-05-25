@@ -380,16 +380,17 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 
 	model = multiply_mat4(model, scale_mat4(size));
 
-	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
-	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
-	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+    mat4 VM = multiply_mat4(view, model);
+    mat4 PVM = multiply_mat4(projection, VM);
+    mat4 VM_normal = transpose(inverse(VM));
+	glUniformMatrix4fv(glGetUniformLocation(handle, "VM"), 1, GL_FALSE, (float*)&VM);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "PVM"), 1, GL_FALSE, (float*)&PVM);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "VM_normal"), 1, GL_FALSE, (float*)&VM_normal);
 
 	glUniform1f(glGetUniformLocation(handle, "emission"), material.emission);
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
 	glUniform1f(glGetUniformLocation(handle, "specular_amplitude"), material.specular_amp);
 
-    //glUniform3f(glGetUniformLocation(handle, "camera_pos"), camera.pos.x, camera.pos.y, camera.pos.z);
-    //glUniform3f(glGetUniformLocation(handle, "light_position"), 0.0f, 0.0f, 0.0f);
 	v4 light_position = multiply_mat4_v4(view, V4(0.0f, 0.0f, 0.0f, 1.0f));
     glUniform3f(glGetUniformLocation(handle, "light_position"), light_position.x, light_position.y, light_position.z);
     glUniform3f(glGetUniformLocation(handle, "light_color"), 1.0f, 1.0f, 1.0f);

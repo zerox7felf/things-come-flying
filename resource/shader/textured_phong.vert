@@ -1,4 +1,4 @@
-// diffuse.vert
+// textured_phong.vert
 
 #version 330 core
 in vec3 position;
@@ -9,13 +9,13 @@ out vec3 surface_normal;
 out vec2 texture_coord;
 out vec3 viewspace_position;
 
-uniform mat4 projection;
-uniform mat4 view;
-uniform mat4 model;
+uniform mat4 VM;
+uniform mat4 PVM;
+uniform mat4 VM_normal;
 
 void main() {
-	surface_normal = normalize(mat3(transpose(inverse(view * model))) * normal);	//TODO: move normal transform to uniform
-	texture_coord = vec2(uv.x, 1 - uv.y);                                           // Flip Y so blender uv-s work
-	viewspace_position = vec3(view * model * vec4(position, 1));                    //TODO: VM to uniform
-	gl_Position = projection * view * model * vec4(position, 1);                    //TODO: PVM to uniform
+	texture_coord = vec2(uv.x, 1 - uv.y); // Flip Y so blender's UVs work
+	surface_normal = normalize(mat3(VM_normal) * normal);
+	viewspace_position = (VM * vec4(position, 1)).xyz;
+	gl_Position = PVM * vec4(position, 1);
 }
