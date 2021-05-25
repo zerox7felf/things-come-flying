@@ -9,6 +9,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/4k_alien.png",
 	"resource/texture/4k_moon.png",
 	"resource/texture/monster.png",
+	"resource/texture/green.png",
 };
 
 const char* skybox_path[MAX_SKYBOX] = {
@@ -24,6 +25,7 @@ const char* mesh_path[MAX_MESH] = {
 	"resource/mesh/sphere.obj",
 	"resource/mesh/cube.obj",
 	"resource/mesh/monster.obj",
+    "resource/mesh/teapot.obj"
 };
 
 void resources_initialize(Resources* resources) {

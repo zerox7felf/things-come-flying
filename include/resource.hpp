@@ -13,6 +13,7 @@ enum Texture_id {
 	TEXTURE_ALIEN,
 	TEXTURE_MOON,
 	TEXTURE_GUY,
+    TEXTURE_GREEN,
 
 	MAX_TEXTURE,
 };
@@ -38,6 +39,7 @@ enum Mesh_id {
 	MESH_SPHERE,
 	MESH_CUBE,
 	MESH_GUY,
+    MESH_TEAPOT,
 
 	MAX_MESH,
 };

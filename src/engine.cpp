@@ -59,7 +59,7 @@ i32 engine_run(Engine* engine) {
             printf("Shine: %f\n", shine);
         }
 		if (key_pressed[GLFW_KEY_1]) {
-			engine->time_scale -= 0.025f;
+			engine->time_scale -= 0.05f;
 			fprintf(stdout, "Time scale: %g\n", engine->time_scale);
 		}
 		if (key_pressed[GLFW_KEY_2]) {
@@ -104,31 +104,43 @@ i32 engine_run(Engine* engine) {
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
             .emission = 0.0f,
             .shininess = shine,
+            .specular_amp = 0.5,
             .texture_id = TEXTURE_EARTH
         });
 
         render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
             .emission = 1.0f,
             .shininess = 80.0f,
+            .specular_amp = 0.5,
             .texture_id = TEXTURE_SUN
         });
 
 		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
             .emission = 0.0f,
             .shininess = 120.0f,
+            .specular_amp = 0.5,
             .texture_id = TEXTURE_ALIEN
         });
 
 		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
             .emission = 0.0f,
             .shininess = 1.0f,
+            .specular_amp = 0.5,
             .texture_id = TEXTURE_MOON
         });
 
 		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, MESH_GUY, (Material) {
             .emission = 0.0f,
             .shininess = 1.0f,
+            .specular_amp = 0.5,
             .texture_id = TEXTURE_GUY
+        });
+
+        render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(0.05f, 0.05f, 0.05f), MESH_TEAPOT, (Material) {
+            .emission = 0.0f,
+            .shininess = 10.0f,
+            .specular_amp = 0.5f,
+            .texture_id = TEXTURE_GREEN
         });
 
 		angle += 2.5f * engine->delta_time;
