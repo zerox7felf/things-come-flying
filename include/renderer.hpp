@@ -45,6 +45,7 @@ typedef struct Render_state {
 
 	Resources resources;
 	i32 depth_func;
+	u8 initialized;
 } Render_state;
 
 i32 renderer_initialize();

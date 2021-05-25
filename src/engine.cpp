@@ -143,7 +143,7 @@ i32 engine_run(Engine* engine) {
             .texture_id = TEXTURE_GREEN
         });
 
-		angle += 2.5f * engine->delta_time;
+		angle = 10 * engine->total_time;
 
 		renderer_unbind_fbo();
 

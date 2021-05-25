@@ -21,7 +21,7 @@ mat4 ortho_projection;
 mat4 view;
 mat4 model;
 
-Render_state render_state;
+Render_state render_state = {0};
 
 u32 basic_shader = 0,
 	diffuse_shader = 0,
@@ -129,6 +129,7 @@ static void unload_model(Model* model);
 static void unload_texture(u32* texture_id);
 static void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, void* data);
 static void fbo_initialize(Fbo* fbo, i32 width, i32 height);
+static void fbo_unload(Fbo* fbo);
 
 i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out) {
 	i32 result = NoError;
@@ -372,6 +373,14 @@ void fbo_initialize(Fbo* fbo, i32 width, i32 height) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void fbo_unload(Fbo* fbo) {
+	glDeleteTextures(1, &fbo->texture);
+	glDeleteTextures(1, &fbo->depth);
+	glDeleteFramebuffers(1, &fbo->fbo);
+	fbo->width = 0;
+	fbo->height = 0;
+}
+
 void opengl_initialize(Render_state* renderer) {
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
@@ -440,11 +449,18 @@ i32 renderer_initialize() {
 	shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
 	shader_compile_from_file("resource/shader/texture", &texture_shader);
+	render_state.initialized = 1;
 	return 0;
 }
 
 void renderer_framebuffer_callback(i32 width, i32 height) {
-
+	if (!render_state.initialized)
+		return;
+	Fbo* fbo = &current_fbo;
+	if (fbo->texture > 0) {
+		fbo_unload(fbo);
+	}
+	fbo_initialize(fbo, width, height);
 }
 
 void renderer_clear_fbo() {
