@@ -12,10 +12,12 @@
 #include "common.hpp"
 #include "mesh.hpp"
 #include "image.hpp"
-#include "renderer.hpp"
+#include "window.hpp"
 #include "camera.hpp"
+#include "renderer.hpp"
 
 mat4 projection;
+mat4 ortho_projection;
 mat4 view;
 mat4 model;
 
@@ -23,55 +25,73 @@ Render_state render_state;
 
 u32 basic_shader = 0,
 	diffuse_shader = 0,
-	skybox_shader = 0;
+	skybox_shader = 0,
+	texture_shader = 0;
 Model cube_model;
+Fbo current_fbo;
 
 #define SHADER_ERROR_BUFFER_SIZE 512
+
+u32 quad_vbo = 0;
+u32 quad_vao = 0;
+
+static float quad_vertices[] = {
+	// vertex,	uv
+	0.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 0.0f,
+
+	0.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 1.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 0.0f,
+};
+
+#define quad_vertex_count ARR_SIZE(quad_data)
 
 #define CUBE_SIZE 1.0f
 
 float cube_vertices[] = {
-  -CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
-  -CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
-  -CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
 
-  -CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
-  -CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-  -CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
-  -CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
-  -CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-  -CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
 
-   CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
 
-  -CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
-  -CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
-  -CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
 
-  -CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-  -CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
-  -CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE,  CUBE_SIZE,
+	-CUBE_SIZE,  CUBE_SIZE, -CUBE_SIZE,
 
-  -CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-  -CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
-  -CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
-   CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE
+	-CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE, -CUBE_SIZE,
+	-CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE,
+	CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE
 };
 
 static const char* vert_source_code =
@@ -100,6 +120,7 @@ static void opengl_initialize(Render_state* renderer);
 static i32 render_state_initialize(Render_state* renderer);
 static i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out);
 static i32 shader_compile_from_file(const char* path, u32* program_out);
+static void upload_quad_data();
 static i32 upload_texture(Render_state* renderer, Image* image, u32* texture_id);
 static i32 upload_skybox_texture(Render_state* renderer, u32 skybox_id, u32* texture_id);
 static i32 upload_model(Model* model, float* vertices, u32 vertex_count);
@@ -107,6 +128,7 @@ static i32 upload_model(Model* model, Mesh* mesh);
 static void unload_model(Model* model);
 static void unload_texture(u32* texture_id);
 static void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, void* data);
+static void fbo_initialize(Fbo* fbo, i32 width, i32 height);
 
 i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out) {
 	i32 result = NoError;
@@ -185,6 +207,19 @@ done:
 	buffer_free(&vert_source);
 	buffer_free(&frag_source);
 	return result;
+}
+
+void upload_quad_data() {
+	glGenVertexArrays(1, &quad_vao);
+	glGenBuffers(1, &quad_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
+
+	glBindVertexArray(quad_vao);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 i32 upload_texture(Render_state* renderer, Image* image, u32* texture_id) {
@@ -294,6 +329,47 @@ void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, voi
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void fbo_initialize(Fbo* fbo, i32 width, i32 height) {
+	fbo->width = width;
+	fbo->height = height;
+
+	glGenFramebuffers(1, &fbo->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+
+	glGenTextures(1, &fbo->texture);
+	glBindTexture(GL_TEXTURE_2D, fbo->texture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glGenTextures(1, &fbo->depth);
+	glBindTexture(GL_TEXTURE_2D, fbo->depth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fbo->texture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fbo->depth, 0);
+
+	GLenum draw_buffers[] = {
+		GL_COLOR_ATTACHMENT0,
+		GL_DEPTH_ATTACHMENT,
+	};
+	glDrawBuffers(2, draw_buffers);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo->fbo);
+	GLenum err = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+	if (err != GL_FRAMEBUFFER_COMPLETE) {
+		printf("FBO error: %i\n", err);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void opengl_initialize(Render_state* renderer) {
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
@@ -313,6 +389,7 @@ void opengl_initialize(Render_state* renderer) {
 
 i32 render_state_initialize(Render_state* renderer) {
 	opengl_initialize(renderer);
+	upload_quad_data();
 	Resources* res = &renderer->resources;
 	renderer->texture_count = 0;
 	renderer->model_count = 0;
@@ -342,6 +419,7 @@ i32 render_state_initialize(Render_state* renderer) {
 	}
 
 	upload_model(&cube_model, cube_vertices, ARR_SIZE(cube_vertices));
+	fbo_initialize(&current_fbo, window_width(), window_height());
 	return NoError;
 }
 
@@ -358,7 +436,26 @@ i32 renderer_initialize() {
 	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
 	shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
+	shader_compile_from_file("resource/shader/texture", &texture_shader);
 	return 0;
+}
+
+void renderer_framebuffer_callback(i32 width, i32 height) {
+
+}
+
+void renderer_clear_fbo() {
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void renderer_bind_fbo() {
+	Fbo* fbo = &current_fbo;
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+}
+
+void renderer_unbind_fbo() {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
@@ -377,12 +474,15 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 
 	model = multiply_mat4(model, scale_mat4(size));
 
+	mat4 ti_model = transpose(inverse(model));
+
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "ti_model"), 1, GL_FALSE, (float*)&ti_model);
 	glUniform1f(glGetUniformLocation(handle, "emission"), material.emission);
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
-    glUniform3f(glGetUniformLocation(handle, "camera_pos"), camera.pos.x, camera.pos.y, camera.pos.z);
+	glUniform3f(glGetUniformLocation(handle, "camera_pos"), camera.pos.x, camera.pos.y, camera.pos.z);
 
 	glBindVertexArray(mesh->vao);
 
@@ -403,6 +503,39 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 
 	glUseProgram(0);
 }
+
+void render_fbo() {
+	Fbo* fbo = &current_fbo;
+	u32 handle = texture_shader;
+	glUseProgram(handle);
+	u32 texture = fbo->texture;
+
+	mat4 view_matrix = mat4d(1.0f);
+
+	model = translate(V3(0, 0, 0));
+
+	model = multiply_mat4(model, scale_mat4(V3((float)window_width(), (float)window_height(), 0)));
+
+	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&ortho_projection);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view_matrix);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(quad_vao);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glBindVertexArray(0);
+
+	glDisableVertexAttribArray(0);
+
+	glUseProgram(0);
+}
+
 
 void render_skybox(u32 skybox_id, float brightness) {
 	Render_state* renderer = &render_state;
@@ -435,9 +568,14 @@ void render_skybox(u32 skybox_id, float brightness) {
 }
 
 void renderer_destroy() {
+	Render_state* renderer = &render_state;
+
 	glDeleteShader(basic_shader);
 	glDeleteShader(diffuse_shader);
-	Render_state* renderer = &render_state;
+	glDeleteShader(skybox_shader);
+	glDeleteShader(texture_shader);
+	glDeleteVertexArrays(1, &quad_vao);
+	glDeleteVertexArrays(1, &quad_vbo);
 
 	for (u32 i = 0; i < renderer->texture_count; i++) {
 		u32* texture_id = &renderer->textures[i];
@@ -455,8 +593,8 @@ void renderer_destroy() {
 		Model* model = &renderer->models[i];
 		unload_model(model);
 	}
-
 	renderer->model_count = 0;
+
 	resources_unload(&render_state.resources);
 	unload_model(&cube_model);
 }
