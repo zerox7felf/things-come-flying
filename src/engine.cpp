@@ -117,7 +117,6 @@ i32 engine_run(Engine* engine) {
             .texture_id = TEXTURE_ALIEN
         });
 
-
 		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
             .emission = 0.0f,
             .shininess = 1.0f,
@@ -130,6 +129,13 @@ i32 engine_run(Engine* engine) {
             .shininess = 1.0f,
             .specular_amp = 0.5,
             .texture_id = TEXTURE_GUY
+        });
+
+        render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(0.05f, 0.05f, 0.05f), MESH_TEAPOT, (Material) {
+            .emission = 0.0f,
+            .shininess = 10.0f,
+            .specular_amp = 0.5f,
+            .texture_id = TEXTURE_GREEN
         });
 
 		angle += 2.5f * engine->delta_time;
