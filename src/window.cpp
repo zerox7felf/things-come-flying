@@ -71,6 +71,10 @@ i32 window_height() {
 	return win.height;
 }
 
+void window_set_title(const char* title) {
+	glfwSetWindowTitle((GLFWwindow*)win.window, title);
+}
+
 i32 window_poll_events() {
 	glfwPollEvents();
 

@@ -19,6 +19,8 @@ i32 window_width();
 
 i32 window_height();
 
+void window_set_title(const char* title);
+
 i32 window_poll_events();
 
 void window_clear_buffers(float r, float g, float b);

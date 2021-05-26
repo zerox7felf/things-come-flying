@@ -8,6 +8,7 @@
 #include "renderer.hpp"
 
 #define MAX_DT 1.0f
+#define TITLE_SIZE 128
 
 Engine engine;
 
@@ -31,6 +32,7 @@ i32 engine_run(Engine* engine) {
 	struct timeval now = {0};
 	struct timeval prev = {0};
 	u8 follow_guy = 0;
+	char title_string[TITLE_SIZE] = {0};
 	while (engine->is_running && window_poll_events() >= 0) {
 		prev = now;
 		gettimeofday(&now, NULL);
@@ -154,6 +156,9 @@ i32 engine_run(Engine* engine) {
 		renderer_unbind_fbo();
 
 		render_fbo();
+
+		snprintf(title_string, TITLE_SIZE, "Solar System | %i fps | %g delta", (i32)(1.0f / engine->delta_time), engine->delta_time);
+		window_set_title(title_string);
 
 		window_swap_buffers();
 		window_clear_buffers(0, 0, 0);

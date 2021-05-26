@@ -7,9 +7,9 @@
 #include "window.hpp"
 #include "camera.hpp"
 
-#define mouse_sensitivity 0.05f
-#define move_speed 24.0f
-#define move_interpolation_speed 10.0f
+static double mouse_sensitivity = 0.05;
+static double move_speed = 24;
+static float move_interpolation_speed = 10;
 
 Camera camera;
 static double last_x = 0.0f;
