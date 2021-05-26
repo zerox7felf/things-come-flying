@@ -31,7 +31,7 @@ i32 engine_run(Engine* engine) {
     float shine = 1.0f;
 	struct timeval now = {0};
 	struct timeval prev = {0};
-	u8 follow_guy = 0;
+	u8 follow_target = 0;
 	char title_string[TITLE_SIZE] = {0};
 	while (engine->is_running && window_poll_events() >= 0) {
 		prev = now;
@@ -73,7 +73,7 @@ i32 engine_run(Engine* engine) {
 			fprintf(stdout, "Reset time scale: %g\n", engine->time_scale);
 		}
 		if (key_pressed[GLFW_KEY_F]) {
-			follow_guy = !follow_guy;
+			follow_target = !follow_target;
 		}
 		if (key_pressed[GLFW_KEY_R]) {
 			engine_initialize(engine);
@@ -101,10 +101,10 @@ i32 engine_run(Engine* engine) {
 		v3 moon_size = earth_size * 0.5f;
 
 		v3 guy_pos = moon_pos + V3(1 * cos(2.5f * engine->total_time), 0, 1 * sin(2.5f * engine->total_time));
-		v3 guy_size = moon_size * 0.5f;
+		v3 guy_size = moon_size * 0.2f;
 
-		if (follow_guy) {
-			camera.target_pos = guy_pos - camera.forward * 1.5f;
+		if (follow_target) {
+			camera.target_pos = earth_pos - camera.forward * 1.5f;
 		}
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
@@ -112,8 +112,8 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = shine,
-            .texture0_id = TEXTURE_EARTH,
-			.texture1_id = TEXTURE_EARTH_CLOUDS,
+            .texture0 = {.id = TEXTURE_EARTH},
+			.texture1 = {.id = TEXTURE_EARTH_CLOUDS, .offset = V2(-0.05f * engine->total_time, 0)},
 			.texture_mix = 1.0f,
         });
 
@@ -122,8 +122,8 @@ i32 engine_run(Engine* engine) {
             .diffuse = 0.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture0_id = TEXTURE_SUN,
-			.texture1_id = 0,
+            .texture0 = {.id = TEXTURE_SUN},
+			.texture1 = {},
 			.texture_mix = 0,
         });
 
@@ -132,8 +132,8 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture0_id = TEXTURE_ALIEN,
-			.texture1_id = 0,
+            .texture0 = {.id = TEXTURE_ALIEN},
+			.texture1 = {},
 			.texture_mix = 0,
         });
 
@@ -142,8 +142,8 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture0_id = TEXTURE_MOON,
-			.texture1_id = 0,
+			.texture0 = {.id = TEXTURE_MOON},
+			.texture1 = {},
 			.texture_mix = 0,
         });
 
@@ -152,8 +152,8 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 1.0f,
-            .texture0_id = TEXTURE_GUY,
-			.texture1_id = 0,
+            .texture0 = {.id = TEXTURE_GUY},
+			.texture1 = {},
 			.texture_mix = 0,
         });
 
@@ -162,8 +162,8 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture0_id = TEXTURE_MOON,
-			.texture1_id = 0,
+            .texture0 = {.id = TEXTURE_MOON},
+			.texture1 = {},
 			.texture_mix = 0,
         });
 

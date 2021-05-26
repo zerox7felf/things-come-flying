@@ -21,13 +21,18 @@ typedef struct Fbo {
 	i32 height;
 } Fbo;
 
+typedef struct Texture {
+	u32 id = 0;
+	v2 offset = V2(0, 0);
+} Texture;
+
 typedef struct Material {
   float ambient;
   float diffuse;
   float specular;
   float shininess;
-  u32 texture0_id;
-  u32 texture1_id;
+  Texture texture0;
+  Texture texture1;
   float texture_mix;
 } Material;
 
