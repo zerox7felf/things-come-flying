@@ -91,14 +91,14 @@ i32 engine_run(Engine* engine) {
 		v3 earth_pos = V3(20 * cos(engine->total_time), 0, 20 * sin(engine->total_time));
 		v3 earth_size = alien_size * 0.5f;
 
-		v3 moon_pos = earth_pos + V3(4 * cos(engine->total_time), 0, 4 * sin(engine->total_time));
+		v3 moon_pos = earth_pos + V3(4 * cos(1.2f * engine->total_time), 0, 4 * sin(1.2f * engine->total_time));
 		v3 moon_size = earth_size * 0.5f;
 
 		v3 guy_pos = moon_pos + V3(1 * cos(2.5f * engine->total_time), 0, 1 * sin(2.5f * engine->total_time));
 		v3 guy_size = moon_size * 0.5f;
 
 		if (follow_guy) {
-			camera.pos = guy_pos - camera.forward * 1.5f;
+			camera.target_pos = guy_pos - camera.forward * 1.5f;
 		}
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {

@@ -464,6 +464,8 @@ void renderer_framebuffer_callback(i32 width, i32 height) {
 }
 
 void renderer_clear_fbo() {
+	Fbo* fbo = &current_fbo;
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

@@ -5,6 +5,7 @@
 
 typedef struct Camera {
 	v3 pos;
+	v3 target_pos;
 	v3 up;
 	v3 right;
 	v3 forward;

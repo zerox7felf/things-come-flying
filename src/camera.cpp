@@ -8,7 +8,8 @@
 #include "camera.hpp"
 
 #define mouse_sensitivity 0.05f
-#define move_speed 12.5f
+#define move_speed 24.0f
+#define move_interpolation_speed 10.0f
 
 Camera camera;
 static double last_x = 0.0f;
@@ -18,6 +19,7 @@ static double delta_y = 0.0f;
 
 void camera_initialize(v3 pos) {
 	camera.pos = pos;
+	camera.target_pos = pos;
 	camera.up = V3(0.0f, 1.0f, 0.0f);	// y axis is up
 	camera.right = V3(1.0f, 0.0f, 0.0f);
 	camera.forward = V3(0.0f, 0.0f, 1.0f);
@@ -52,17 +54,19 @@ void camera_update() {
 	);
 
 	if (key_down[GLFW_KEY_W]) {
-		camera.pos = camera.pos + camera.forward * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos + camera.forward * engine.delta_time * move_speed;
 	}
 	if (key_down[GLFW_KEY_S]) {
-		camera.pos = camera.pos - camera.forward * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos - camera.forward * engine.delta_time * move_speed;
 	}
 	if (key_down[GLFW_KEY_A]) {
-		camera.pos = camera.pos - camera.right * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos - camera.right * engine.delta_time * move_speed;
 	}
 	if (key_down[GLFW_KEY_D]) {
-		camera.pos = camera.pos + camera.right * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos + camera.right * engine.delta_time * move_speed;
 	}
+
+	camera.pos = lerp(camera.pos, camera.target_pos, move_interpolation_speed * engine.delta_time);
 
 	camera.forward = normalize(camera_dir);
 	camera.right = normalize(cross_product(camera.forward, V3(0.0f, 1.0f, 0.0f)));

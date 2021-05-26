@@ -67,6 +67,10 @@ inline mat4 mat4d(float diagonal);
 
 inline mat4 inverse(mat4 a);
 
+inline float lerp(float v0, float v1, float t);
+
+inline v3 lerp(v3 v0, v3 v1, float t);
+
 inline mat4 translate(v3 t);
 
 inline mat4 translate_mat4(mat4 m, v3 t);
@@ -137,6 +141,18 @@ inline mat4 inverse(mat4 a) {
 	result.elements[3][3] = 1.0f;
 
 	return result;
+}
+
+inline float lerp(float v0, float v1, float t) {
+	return (1.0f - t) * v0 + t * v1;
+}
+
+inline v3 lerp(v3 v0, v3 v1, float t) {
+	return V3(
+		lerp(v0.x, v1.x, t),
+		lerp(v0.y, v1.y, t),
+		lerp(v0.z, v1.z, t)
+	);
 }
 
 inline mat4 translate(v3 t) {
@@ -381,6 +397,8 @@ inline mat4 transpose(mat4 a) {
 
 inline transpose(mat4 a) {
 	mat4 result = a;
+
+	assert("not implemented" && 0);
 
 	return result;
 }
