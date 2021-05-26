@@ -79,6 +79,10 @@ i32 engine_run(Engine* engine) {
 			engine_initialize(engine);
 			continue;
 		}
+		if (key_pressed[GLFW_KEY_M]) {
+			window_toggle_cursor_visibility();
+		}
+
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
 

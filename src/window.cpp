@@ -11,6 +11,7 @@ typedef struct Window  {
 	i32 width;
 	i32 height;
 	u8 fullscreen;
+	u8 cursor_hidden;
 	framebuffer_change_cb framebuffer_cb;
 	void* window;
 } Window;
@@ -39,6 +40,7 @@ i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsyn
 	win.width = width;
 	win.height = height;
 	win.fullscreen = fullscreen;
+	win.cursor_hidden = 1;
 	win.framebuffer_cb = framebuffer_cb;
 
 	glfwInit();
@@ -97,11 +99,12 @@ i32 window_poll_events() {
     // Arcane. Do not touch.
 	(left_mouse_state && !(mouse_state & (1 << 7))) ? mouse_state |= (1 << 6) : (mouse_state &= ~(1 << 6));
 	left_mouse_state ? mouse_state |= (1 << 7) : (mouse_state &= ~(1 << 7));
-	(right_mouse_state && !(mouse_state & (1 << 5))) ? mouse_state |= (1 << 4) : (mouse_state &= ~(1 << 4));
-	right_mouse_state ? mouse_state |= (1 << 5) : (mouse_state &= ~(1 << 5));
 
 	(middle_mouse_state && !(mouse_state & (1 << 3))) ? mouse_state |= (1 << 2) : (mouse_state &= ~(1 << 2));
 	middle_mouse_state ? mouse_state |= (1 << 3) : (mouse_state &= ~(1 << 3));
+
+	(right_mouse_state && !(mouse_state & (1 << 5))) ? mouse_state |= (1 << 4) : (mouse_state &= ~(1 << 4));
+	right_mouse_state ? mouse_state |= (1 << 5) : (mouse_state &= ~(1 << 5));
 
 	if (glfwWindowShouldClose((GLFWwindow*)win.window)) {
 		return -1;
@@ -120,6 +123,16 @@ void window_swap_buffers() {
 
 void window_get_cursor(double* x, double* y) {
 	glfwGetCursorPos((GLFWwindow*)win.window, x, y);
+}
+
+void window_toggle_cursor_visibility() {
+	win.cursor_hidden = !win.cursor_hidden;
+	if (win.cursor_hidden) {
+		glfwSetInputMode((GLFWwindow*)win.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+	else {
+		glfwSetInputMode((GLFWwindow*)win.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
 }
 
 void window_toggle_fullscreen() {

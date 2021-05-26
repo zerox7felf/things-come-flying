@@ -29,6 +29,8 @@ void window_swap_buffers();
 
 void window_get_cursor(double* x, double* y);
 
+void window_toggle_cursor_visibility();
+
 void window_toggle_fullscreen();
 
 void window_close();
