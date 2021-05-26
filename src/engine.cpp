@@ -61,7 +61,12 @@ i32 engine_run(Engine* engine) {
             printf("Shine: %f\n", shine);
         }
 		if (key_pressed[GLFW_KEY_1]) {
-			engine->time_scale -= 0.05f;
+			if (engine->time_scale < 0.1f) {
+				engine->time_scale *= 0.5f;
+			}
+			else {
+				engine->time_scale -= 0.05f;
+			}
 			fprintf(stdout, "Time scale: %g\n", engine->time_scale);
 		}
 		if (key_pressed[GLFW_KEY_2]) {
@@ -89,7 +94,7 @@ i32 engine_run(Engine* engine) {
 		renderer_bind_fbo();
 		renderer_clear_fbo();
 
-		render_skybox(CUBE_MAP_SPACE, 0.75f);
+		render_skybox(CUBE_MAP_SPACE, 0.7f);
 
 		v3 alien_pos = V3(35 * cos(engine->total_time * 0.85f), 2 * cos(engine->total_time * 0.85f), 35 * sin(engine->total_time * 0.85f));
 		v3 alien_size = V3(1.5f, 1.5f, 1.5f);
@@ -174,6 +179,7 @@ i32 engine_run(Engine* engine) {
 		render_fbo();
 
 		snprintf(title_string, TITLE_SIZE, "Solar System | %i fps | %g delta", (i32)(1.0f / engine->delta_time), engine->delta_time);
+
 		window_set_title(title_string);
 
 		window_swap_buffers();

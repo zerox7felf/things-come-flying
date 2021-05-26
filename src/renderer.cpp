@@ -26,7 +26,8 @@ Render_state render_state = {0};
 u32 basic_shader = 0,
 	diffuse_shader = 0,
 	skybox_shader = 0,
-	texture_shader = 0;
+	texture_combine_shader = 0;
+
 Model cube_model;
 Fbo current_fbo;
 
@@ -393,6 +394,7 @@ void opengl_initialize(Render_state* renderer) {
 	glEnable(GL_TEXTURE_GEN_R);
 	glEnable(GL_TEXTURE_GEN_T);
 	glEnable(GL_TEXTURE_CUBE_MAP_EXT);
+	// glEnable(GL_FRAMEBUFFER_SRGB);
 
 	renderer->depth_func = GL_LESS;
 	glDepthFunc(renderer->depth_func);
@@ -445,10 +447,9 @@ i32 renderer_initialize() {
 
 	render_state_initialize(&render_state);
 	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
-	//shader_compile_from_file("resource/shader/diffuse", &diffuse_shader);
 	shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
-	shader_compile_from_file("resource/shader/texture", &texture_shader);
+	shader_compile_from_file("resource/shader/texture_combine", &texture_combine_shader);
 	render_state.initialized = 1;
 	return 0;
 }
@@ -502,8 +503,8 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glUniformMatrix4fv(glGetUniformLocation(handle, "PVM"), 1, GL_FALSE, (float*)&PVM);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "VM_normal"), 1, GL_FALSE, (float*)&VM_normal);
 
-	glUniform2fv(glGetUniformLocation(handle, "texture0_offset"), 1, (float*)&material.texture0.offset);
-	glUniform2fv(glGetUniformLocation(handle, "texture1_offset"), 1, (float*)&material.texture1.offset);
+	glUniform2fv(glGetUniformLocation(handle, "offset0"), 1, (float*)&material.texture0.offset);
+	glUniform2fv(glGetUniformLocation(handle, "offset1"), 1, (float*)&material.texture1.offset);
 	glUniform1f(glGetUniformLocation(handle, "texture_mix"), material.texture_mix);
 	glUniform1f(glGetUniformLocation(handle, "ambient_amp"), material.ambient);
 	glUniform1f(glGetUniformLocation(handle, "diffuse_amp"), material.diffuse);
@@ -542,28 +543,35 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 
 void render_fbo() {
 	Fbo* fbo = &current_fbo;
-	u32 handle = texture_shader;
+	u32 handle = texture_combine_shader;
 	glUseProgram(handle);
 	u32 texture = fbo->texture;
-
-	mat4 view_matrix = mat4d(1.0f);
 
 	model = translate(V3(0, 0, 0));
 
 	model = multiply_mat4(model, scale_mat4(V3((float)window_width(), (float)window_height(), 0)));
 
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&ortho_projection);
-	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view_matrix);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
 
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glUniform1i(glGetUniformLocation(handle, "texture0"), 0);
+	glUniform1i(glGetUniformLocation(handle, "texture1"), 1);
 
 	glEnableVertexAttribArray(0);
 
 	glBindVertexArray(quad_vao);
 
+	glDisable(GL_DEPTH_TEST);
+
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glEnable(GL_DEPTH_TEST);
 
 	glBindVertexArray(0);
 
@@ -609,7 +617,7 @@ void renderer_destroy() {
 	glDeleteShader(basic_shader);
 	glDeleteShader(diffuse_shader);
 	glDeleteShader(skybox_shader);
-	glDeleteShader(texture_shader);
+	glDeleteShader(texture_combine_shader);
 	glDeleteVertexArrays(1, &quad_vao);
 	glDeleteVertexArrays(1, &quad_vbo);
 
@@ -633,4 +641,5 @@ void renderer_destroy() {
 
 	resources_unload(&render_state.resources);
 	unload_model(&cube_model);
+	fbo_unload(&current_fbo);
 }
