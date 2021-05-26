@@ -481,7 +481,8 @@ void renderer_unbind_fbo() {
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
 	Render_state* renderer = &render_state;
-	u32 texture = renderer->textures[material.texture_id];
+	u32 texture0 = renderer->textures[material.texture0_id];
+	u32 texture1 = renderer->textures[material.texture1_id];
 	Model* mesh = &renderer->models[mesh_id];
 
 	u32 handle = diffuse_shader;
@@ -501,6 +502,7 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glUniformMatrix4fv(glGetUniformLocation(handle, "PVM"), 1, GL_FALSE, (float*)&PVM);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "VM_normal"), 1, GL_FALSE, (float*)&VM_normal);
 
+	glUniform1f(glGetUniformLocation(handle, "texture_mix"), material.texture_mix);
 	glUniform1f(glGetUniformLocation(handle, "ambient_amp"), material.ambient);
 	glUniform1f(glGetUniformLocation(handle, "diffuse_amp"), material.diffuse);
 	glUniform1f(glGetUniformLocation(handle, "specular_amp"), material.specular);
@@ -517,7 +519,13 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glEnableVertexAttribArray(2);	// normals
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	glUniform1i(glGetUniformLocation(handle, "obj_texture0"), 0);
+	glUniform1i(glGetUniformLocation(handle, "obj_texture1"), 1);
 
 	glDrawElements(GL_TRIANGLES, mesh->draw_count, GL_UNSIGNED_INT, 0);
 

@@ -8,7 +8,10 @@ in vec3 viewspace_position;
 
 out vec4 out_color;
 
-uniform sampler2D obj_texture;
+uniform sampler2D obj_texture0;
+uniform sampler2D obj_texture1;
+
+uniform float texture_mix;
 uniform float ambient_amp;
 uniform float diffuse_amp;
 uniform float specular_amp;
@@ -19,7 +22,7 @@ uniform vec3 light_color;
 
 void main() {
     vec3 interp_surface_normal = normalize(surface_normal);
-    vec3 obj_color = texture(obj_texture, texture_coord).rgb;
+    vec3 obj_color = texture(obj_texture0, texture_coord).rgb + (texture_mix * texture(obj_texture1, texture_coord).rgb);
 
     vec3 light_dir = normalize(light_position - viewspace_position);
     float diffuse = max(dot(interp_surface_normal, light_dir), 0) * diffuse_amp;

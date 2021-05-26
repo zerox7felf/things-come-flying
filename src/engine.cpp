@@ -112,7 +112,9 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = shine,
-            .texture_id = TEXTURE_EARTH
+            .texture0_id = TEXTURE_EARTH,
+			.texture1_id = TEXTURE_EARTH_CLOUDS,
+			.texture_mix = 1.0f,
         });
 
         render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
@@ -120,7 +122,9 @@ i32 engine_run(Engine* engine) {
             .diffuse = 0.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture_id = TEXTURE_SUN
+            .texture0_id = TEXTURE_SUN,
+			.texture1_id = 0,
+			.texture_mix = 0,
         });
 
 		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
@@ -128,7 +132,9 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture_id = TEXTURE_ALIEN
+            .texture0_id = TEXTURE_ALIEN,
+			.texture1_id = 0,
+			.texture_mix = 0,
         });
 
 		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
@@ -136,7 +142,9 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture_id = TEXTURE_MOON
+            .texture0_id = TEXTURE_MOON,
+			.texture1_id = 0,
+			.texture_mix = 0,
         });
 
 		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, MESH_GUY, (Material) {
@@ -144,7 +152,9 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 1.0f,
-            .texture_id = TEXTURE_GUY
+            .texture0_id = TEXTURE_GUY,
+			.texture1_id = 0,
+			.texture_mix = 0,
         });
 
         render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(1.0f, 1.0f, 1.0f), MESH_CUBE, (Material) {
@@ -152,7 +162,9 @@ i32 engine_run(Engine* engine) {
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
-            .texture_id = TEXTURE_MOON
+            .texture0_id = TEXTURE_MOON,
+			.texture1_id = 0,
+			.texture_mix = 0,
         });
 
 		angle = 10 * engine->total_time;

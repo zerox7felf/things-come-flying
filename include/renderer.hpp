@@ -26,7 +26,9 @@ typedef struct Material {
   float diffuse;
   float specular;
   float shininess;
-  u32 texture_id;
+  u32 texture0_id;
+  u32 texture1_id;
+  float texture_mix;
 } Material;
 
 extern mat4 projection;
