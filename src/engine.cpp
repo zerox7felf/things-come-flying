@@ -95,9 +95,6 @@ i32 engine_run(Engine* engine) {
 			renderer_toggle_post_processing();
         }
 
-		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
-		camera_update();
-
 		renderer_bind_fbo(FBO_COLOR);
 
 		render_skybox(CUBE_MAP_SPACE, 0.7f);
@@ -114,9 +111,22 @@ i32 engine_run(Engine* engine) {
 		v3 guy_pos = moon_pos + V3(1 * cos(2.5f * engine->total_time), 0, 1 * sin(2.5f * engine->total_time));
 		v3 guy_size = moon_size * 0.2f;
 
-		if (follow_target) {
-			camera.target_pos = earth_pos - camera.forward * 1.5f;
+		if (engine->scroll_y != 0) {
+			camera.zoom_target += 0.1f * engine->scroll_y;
+			camera.zoom_target = clamp(camera.zoom_target, 1.0f, 255.0f);
 		}
+
+		if (follow_target) {
+			camera.interpolate = 0;
+			camera.target_pos = earth_pos - camera.forward * camera.zoom;
+		}
+		else {
+			camera.interpolate = 1;
+		}
+
+		camera_update();
+		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
+		window_get_scroll(&engine->scroll_x, &engine->scroll_y);
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
             .ambient = {

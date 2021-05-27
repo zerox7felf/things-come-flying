@@ -9,8 +9,11 @@ typedef struct Camera {
 	v3 up;
 	v3 right;
 	v3 forward;
-	double pitch;
-	double yaw;
+	float pitch;
+	float yaw;
+	float zoom;
+	float zoom_target;
+	u8 interpolate;
 } Camera;
 
 extern Camera camera;

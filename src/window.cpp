@@ -7,6 +7,9 @@ i8 mouse_state = 0;
 i8 key_down[GLFW_KEY_LAST] = {0};
 i8 key_pressed[GLFW_KEY_LAST] = {0};
 
+double scroll_x = 0;
+double scroll_y = 0;
+
 typedef struct Window  {
 	i32 width;
 	i32 height;
@@ -19,6 +22,7 @@ typedef struct Window  {
 static Window win;
 
 static void framebuffer_callback(GLFWwindow* window, i32 width, i32 height);
+static void scroll_callback(GLFWwindow* window, double x, double y);
 
 void framebuffer_callback(GLFWwindow* window, i32 width, i32 height) {
 	glViewport(0, 0, width, height);
@@ -34,6 +38,11 @@ void framebuffer_callback(GLFWwindow* window, i32 width, i32 height) {
 	if (win.framebuffer_cb) {
 		win.framebuffer_cb(width, height);
 	}
+}
+
+void scroll_callback(GLFWwindow* window, double x, double y) {
+	scroll_x = x;
+	scroll_y = y;
 }
 
 i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsync, framebuffer_change_cb framebuffer_cb) {
@@ -59,6 +68,7 @@ i32 window_open(const char* title, i32 width, i32 height, u8 fullscreen, u8 vsyn
 	}
 	glfwMakeContextCurrent((GLFWwindow*)win.window);
 	glfwSetFramebufferSizeCallback((GLFWwindow*)win.window, framebuffer_callback);
+	glfwSetScrollCallback((GLFWwindow*)win.window, scroll_callback);
 	glfwSwapInterval(vsync);
 	framebuffer_callback((GLFWwindow*)win.window, win.width, win.height);
 	glfwSetInputMode((GLFWwindow*)win.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -123,6 +133,17 @@ void window_swap_buffers() {
 
 void window_get_cursor(double* x, double* y) {
 	glfwGetCursorPos((GLFWwindow*)win.window, x, y);
+}
+
+void window_get_scroll(double* x, double* y) {
+	if (x) {
+		*x = scroll_x;
+	}
+	if (y) {
+		*y = scroll_y;
+	}
+	scroll_x = 0;
+	scroll_y = 0;
 }
 
 void window_toggle_cursor_visibility() {

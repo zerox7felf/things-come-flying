@@ -16,6 +16,8 @@ typedef struct Engine {
 	float time_scale;
 	double mouse_x;
 	double mouse_y;
+	double scroll_x;
+	double scroll_y;
 } Engine;
 
 extern Engine engine;

@@ -61,6 +61,8 @@ typedef struct Buffer {
 #define V3(X, Y, Z) ((v3) {{ .x = X, .y = Y, .z = Z, }})
 #define V4(X, Y, Z, W) ((v4) {{ .x = X, .y = Y, .z = Z, .w = W, }})
 
+#define clamp(Value, Min, Max) (Value < Min ? Min : (Value > Max ? Max : Value))
+
 typedef enum Status_code {
 	NoError = 0,
 	Error = -1,

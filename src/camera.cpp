@@ -9,7 +9,10 @@
 
 static double mouse_sensitivity = 0.05;
 static double move_speed = 24;
-static float move_interpolation_speed = 10;
+static float move_interpolation_speed = 5;
+
+#define camera_zoom_default 1.5f
+#define camera_zoom_interpolation_speed 10.0f
 
 Camera camera;
 static double last_x = 0.0f;
@@ -25,6 +28,8 @@ void camera_initialize(v3 pos) {
 	camera.forward = V3(0.0f, 0.0f, 1.0f);
 	camera.pitch = 0.0f;
 	camera.yaw = 90.0f;
+	camera.zoom = camera.zoom_target = camera_zoom_default;
+	camera.interpolate = 1;
 }
 
 void camera_update() {
@@ -66,7 +71,14 @@ void camera_update() {
 		camera.target_pos = camera.target_pos + camera.right * engine.delta_time * move_speed;
 	}
 
-	camera.pos = lerp(camera.pos, camera.target_pos, move_interpolation_speed * engine.delta_time);
+	if (camera.interpolate) {
+		camera.pos = lerp(camera.pos, camera.target_pos, move_interpolation_speed * engine.delta_time);
+	}
+	else {
+		camera.pos = camera.target_pos;
+	}
+
+	camera.zoom = lerp(camera.zoom, camera.zoom_target, camera_zoom_interpolation_speed * engine.delta_time);
 
 	camera.forward = normalize(camera_dir);
 	camera.right = normalize(cross_product(camera.forward, V3(0.0f, 1.0f, 0.0f)));
