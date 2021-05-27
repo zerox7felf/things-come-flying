@@ -63,6 +63,28 @@ inline v3 operator*(v3 a, float scalar) {
 	return result;
 }
 
+inline bool operator==(v2 a, v2 b) {
+    return  a.x == b.x &&
+            a.y == b.y;
+}
+
+inline bool operator!=(v2 a, v2 b) {
+    return  a.x != b.x ||
+            a.y != b.y;
+}
+
+inline bool operator==(v3 a, v3 b) {
+    return  a.x == b.x &&
+            a.y == b.y &&
+            a.z == b.z;
+}
+
+inline bool operator!=(v3 a, v3 b) {
+    return  a.x != b.x ||
+            a.y != b.y ||
+            a.z != b.z;
+}
+
 inline mat4 mat4d(float diagonal);
 
 inline mat4 inverse(mat4 a);

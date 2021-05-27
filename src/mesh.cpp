@@ -6,6 +6,7 @@
 #include "common.hpp"
 #include "memory.hpp"
 #include "mesh.hpp"
+#include "matrix_math.hpp"
 
 #define MAX_LINE_SIZE 256
 
@@ -39,19 +40,41 @@ void mesh_initialize(Mesh* mesh) {
 i32 mesh_sort_indices(Mesh* mesh) {
 	v2* uv = (v2*)m_malloc(sizeof(v2) * mesh->vertex_index_count);
 	u32 uv_count = mesh->vertex_index_count;
+    u8 uv_flags[uv_count] = {0};
 
 	v3* normals = (v3*)m_malloc(sizeof(v3) * mesh->vertex_index_count);
 	u32 normal_count = mesh->vertex_index_count;
+    u8 normal_flags[normal_count] = {0};
 
 	for (u32 i = 0; i < mesh->vertex_index_count; ++i) {
 		u32 index = mesh->vertex_indices[i];
 		u32 uv_index = mesh->uv_indices[i];
 		u32 normal_index = mesh->normal_indices[i];
 
-		v2 current_uv = mesh->uv[uv_index];
-		uv[index] = current_uv;
-		v3 current_normal = mesh->normals[normal_index];
-		normals[index] = current_normal;
+        v2 current_uv = mesh->uv[uv_index];
+        v3 current_normal = mesh->normals[normal_index];
+        if (uv_flags[index] || normal_flags[index]) {
+            // Vertex in use
+            if (uv[index] != current_uv || normals[index] != current_normal) {
+                // Data not identical, make new vertex.
+                list_push(mesh->vertices, mesh->vertex_count, mesh->vertices[index]);
+                index = mesh->vertex_count - 1;
+                mesh->vertex_indices[i] = index;
+
+                uv[index] = current_uv;
+                //uv_flags[index] = 1;
+
+                normals[index] = current_normal;
+                //normal_flags[index] = 1;
+            }
+        } else {
+            // Set vertex attributes
+            uv[index] = current_uv;
+            uv_flags[index] = 1;
+
+            normals[index] = current_normal;
+            normal_flags[index] = 1;
+        }
 	}
 
 	list_free(mesh->uv, mesh->uv_count);
