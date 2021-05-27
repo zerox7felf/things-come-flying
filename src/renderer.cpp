@@ -111,7 +111,7 @@ static void unload_texture(u32* texture_id);
 static void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, void* data);
 static void fbos_initialize(Render_state* renderer, i32 width, i32 height);
 static void fbos_unload(Render_state* renderer);
-static void fbo_initialize(Fbo* fbo, i32 width, i32 height);
+static void fbo_initialize(Fbo* fbo, i32 width, i32 height, i32 filter_method);
 static void fbo_unload(Fbo* fbo);
 
 i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out) {
@@ -318,7 +318,12 @@ void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, voi
 void fbos_initialize(Render_state* renderer, i32 width, i32 height) {
 	for (i32 i = 0; i < MAX_FBO; ++i) {
 		Fbo* fbo = &renderer->fbos[i];
-		fbo_initialize(fbo, width, height);
+		if (i == FBO_H_BLUR || i == FBO_V_BLUR || i == FBO_BRIGHTNESS_EXTRACT) {
+			fbo_initialize(fbo, width, height, GL_LINEAR);
+		}
+		else {
+			fbo_initialize(fbo, width, height, GL_NEAREST);
+		}
 		renderer->fbo_count++;
 	}
 }
@@ -331,7 +336,7 @@ void fbos_unload(Render_state* renderer) {
 	renderer->fbo_count = 0;
 }
 
-void fbo_initialize(Fbo* fbo, i32 width, i32 height) {
+void fbo_initialize(Fbo* fbo, i32 width, i32 height, i32 filter_method) {
 	fbo->width = width;
 	fbo->height = height;
 
@@ -342,8 +347,8 @@ void fbo_initialize(Fbo* fbo, i32 width, i32 height) {
 	glBindTexture(GL_TEXTURE_2D, fbo->texture);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter_method);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter_method);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -582,23 +587,6 @@ void renderer_post_process() {
 		}
 	});
 
-	render_fbo(FBO_H_BLUR, FBO_V_BLUR, (Fbo_attributes) {
-		.shader_id = blur_shader,
-		{
-			.blur = {
-				.vertical = 0,
-			}
-		}
-	});
-	render_fbo(FBO_V_BLUR, FBO_H_BLUR, (Fbo_attributes) {
-		.shader_id = blur_shader,
-		{
-			.blur = {
-				.vertical = 1,
-			}
-		}
-	});
-
 	render_fbo(FBO_H_BLUR, FBO_COMBINE, (Fbo_attributes) {
 		.shader_id = blur_shader,
 		{
@@ -613,7 +601,7 @@ void renderer_post_process() {
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
-				.mix = 0.35,
+				.mix = 0.23f,
 			},
 		}
 	});
