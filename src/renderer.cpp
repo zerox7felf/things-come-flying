@@ -27,7 +27,8 @@ u32 diffuse_shader = 0,
 	skybox_shader = 0,
 	texture_shader = 0,
 	combine_shader = 0,
-	blur_shader = 0;
+	blur_shader = 0,
+	brightness_extract_shader = 0;
 
 Model cube_model;
 Fbo* current_fbo = NULL;
@@ -447,6 +448,7 @@ i32 renderer_initialize() {
 	shader_compile_from_file("resource/shader/texture", &texture_shader);
 	shader_compile_from_file("resource/shader/combine", &combine_shader);
 	shader_compile_from_file("resource/shader/blur", &blur_shader);
+	shader_compile_from_file("resource/shader/brightness_extract", &brightness_extract_shader);
 	render_state.initialized = 1;
 	return 0;
 }
@@ -493,6 +495,8 @@ void renderer_unbind_fbo() {
 
 void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 	renderer_bind_fbo(target_fbo);
+	renderer_clear_fbo();
+
 	Render_state* renderer = &render_state;
 	Fbo* fbo = &renderer->fbos[fbo_id];
 
@@ -516,10 +520,6 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 
 	// Do bindings depending on which fbo we are handling
 	switch (fbo_id) {
-		case FBO_COLOR: {
-			glUniform1f(glGetUniformLocation(handle, "value"), attr.color.value);
-			break;
-		}
 		case FBO_COMBINE: {
 			glUniform1i(glGetUniformLocation(handle, "texture1"), 1);
 			glActiveTexture(GL_TEXTURE1);
@@ -555,13 +555,12 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 
 void renderer_post_process() {
 	Render_state* renderer = &render_state;
-	render_fbo(FBO_COLOR, FBO_V_BLUR, (Fbo_attributes) {
+	render_fbo(FBO_COLOR, FBO_BRIGHTNESS_EXTRACT, (Fbo_attributes) {
 		.shader_id = texture_shader,
-		{
-			.color = {
-				.value = 1.0f,
-			}
-		}
+	});
+
+	render_fbo(FBO_BRIGHTNESS_EXTRACT, FBO_V_BLUR, (Fbo_attributes) {
+		.shader_id = brightness_extract_shader,
 	});
 
 	render_fbo(FBO_V_BLUR, FBO_H_BLUR, (Fbo_attributes) {
@@ -587,7 +586,7 @@ void renderer_post_process() {
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
-				.mix = 0.3f,
+				.mix = 0.5f,
 			}
 		}
 	});

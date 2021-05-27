@@ -1,4 +1,4 @@
-// texture.frag
+// brightness_extract.frag
 
 #version 330 core
 
@@ -10,5 +10,6 @@ uniform sampler2D texture0;
 
 void main() {
 	vec4 color = texture(texture0, texture_coord);
-    out_color = color;
+	float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+    out_color = color * brightness;
 }

@@ -59,6 +59,7 @@ extern mat4 model;
 enum Fbo_type {
 	FBO_STANDARD_FRAMEBUFFER = -1,
 	FBO_COLOR,
+	FBO_BRIGHTNESS_EXTRACT,
 	FBO_COMBINE,
 	FBO_V_BLUR,
 	FBO_H_BLUR,
@@ -73,9 +74,6 @@ typedef struct Fbo_attributes {
 			u32 texture1;
 			float mix;
 		} combine;
-		struct {
-			float value;
-		} color;
 		struct {
 			u8 vertical;
 		} blur;
