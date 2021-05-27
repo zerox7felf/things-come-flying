@@ -597,6 +597,8 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 
     u32 color_map = renderer->textures[material.color_map.id];
     u32 ambient_map = renderer->textures[material.ambient.type == VALUE_MAP_MAP ? material.ambient.value.map.id : 0];
+    u32 diffuse_map = renderer->textures[material.diffuse.type == VALUE_MAP_MAP ? material.diffuse.value.map.id : 0];
+    u32 specular_map = renderer->textures[material.specular.type == VALUE_MAP_MAP ? material.specular.value.map.id : 0];
 	Model* mesh = &renderer->models[mesh_id];
 
 	u32 handle = diffuse_shader;
@@ -622,6 +624,14 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
         glGetUniformLocation(handle, "ambient_map_offset"), 1,
         material.ambient.type == VALUE_MAP_MAP ? (float*)&material.ambient.value.map.offset : (float*)&default_offset
     );
+	glUniform2fv(
+        glGetUniformLocation(handle, "diffuse_map_offset"), 1,
+        material.diffuse.type == VALUE_MAP_MAP ? (float*)&material.diffuse.value.map.offset : (float*)&default_offset
+    );
+	glUniform2fv(
+        glGetUniformLocation(handle, "specular_map_offset"), 1,
+        material.specular.type == VALUE_MAP_MAP ? (float*)&material.specular.value.map.offset : (float*)&default_offset
+    );
 
 	glUniform2fv(glGetUniformLocation(handle, "offset1"), 1, (float*)&material.texture1.offset);
 	glUniform1f(glGetUniformLocation(handle, "texture_mix"), material.texture_mix);
@@ -629,8 +639,8 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
     // Mappable values
     // If type is not VALUE_MAP_CONST, set their value to -1 (which isn't valid to the shader normally, so should be fine as a flag)
 	glUniform1f(glGetUniformLocation(handle, "ambient_amp"), material.ambient.type == VALUE_MAP_CONST ? material.ambient.value.constant : -1.0f);
-	glUniform1f(glGetUniformLocation(handle, "diffuse_amp"), material.diffuse);
-	glUniform1f(glGetUniformLocation(handle, "specular_amp"), material.specular);
+	glUniform1f(glGetUniformLocation(handle, "diffuse_amp"), material.diffuse.type == VALUE_MAP_CONST ? material.diffuse.value.constant : -1.0f);
+	glUniform1f(glGetUniformLocation(handle, "specular_amp"), material.specular.type == VALUE_MAP_CONST ? material.specular.value.constant : -1.0f);
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
 
 	v4 light_position = multiply_mat4_v4(view, V4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -650,11 +660,19 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glBindTexture(GL_TEXTURE_2D, ambient_map);
 
 	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, diffuse_map);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, specular_map);
+
+	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
 	glUniform1i(glGetUniformLocation(handle, "color_map"), 0);
 	glUniform1i(glGetUniformLocation(handle, "ambient_map"), 1);
-	glUniform1i(glGetUniformLocation(handle, "obj_texture1"), 2);
+	glUniform1i(glGetUniformLocation(handle, "diffuse_map"), 2);
+	glUniform1i(glGetUniformLocation(handle, "specular_map"), 3);
+	glUniform1i(glGetUniformLocation(handle, "obj_texture1"), 4);
 
 	glDrawElements(GL_TRIANGLES, mesh->draw_count, GL_UNSIGNED_INT, 0);
 

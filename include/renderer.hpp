@@ -43,8 +43,8 @@ typedef struct Value_map {
 
 typedef struct Material {
     Value_map ambient;
-    float diffuse;
-    float specular;
+    Value_map diffuse;
+    Value_map specular;
     float shininess;
     Texture color_map;
     Texture texture1;
