@@ -9,19 +9,20 @@ layout (location = 0) out vec4 out_color;
 uniform sampler2D texture0;
 uniform bool vertical;	// Dictates if we should blur vertically or horizontally
 
-float weights[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+// Gaussian kernel is calculated with https://dev.theomader.com/gaussian-kernel-calculator/
+float weights[9] = float[] (0.000229, 0.005977, 0.060598, 0.241732, 0.382928, 0.241732, 0.060598, 0.005977, 0.000229);
 
 void main() {
 	vec4 color = vec4(0);
 	vec2 texel_size = 1.0 / textureSize(texture0, 0);
 	if (vertical) {
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 9; i++) {
 			color += weights[i] * texture(texture0, texture_coord + vec2(0, texel_size.x * i));
 			color += weights[i] * texture(texture0, texture_coord - vec2(0, texel_size.x * i));
 		}
 	}
 	else {
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 9; i++) {
 			color += weights[i] * texture(texture0, texture_coord + vec2(texel_size.y * i, 0));
 			color += weights[i] * texture(texture0, texture_coord - vec2(texel_size.y * i, 0));
 		}

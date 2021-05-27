@@ -532,6 +532,10 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 			glUniform1i(glGetUniformLocation(handle, "vertical"), attr.blur.vertical);
 			break;
 		}
+		case FBO_BRIGHTNESS_EXTRACT: {
+			glUniform1f(glGetUniformLocation(handle, "factor"), attr.extract.factor);
+			break;
+		}
 		default:
 			break;
 	}
@@ -561,6 +565,11 @@ void renderer_post_process() {
 
 	render_fbo(FBO_BRIGHTNESS_EXTRACT, FBO_V_BLUR, (Fbo_attributes) {
 		.shader_id = brightness_extract_shader,
+		{
+			.extract = {
+				.factor = 2,
+			},
+		}
 	});
 
 	render_fbo(FBO_V_BLUR, FBO_H_BLUR, (Fbo_attributes) {
@@ -586,7 +595,7 @@ void renderer_post_process() {
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
-				.mix = 0.5f,
+				.mix = 0.2f,
 			}
 		}
 	});

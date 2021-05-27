@@ -77,6 +77,9 @@ typedef struct Fbo_attributes {
 		struct {
 			u8 vertical;
 		} blur;
+		struct {
+			float factor;
+		} extract;
 	};
 } Fbo_attributes;
 
