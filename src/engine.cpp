@@ -118,9 +118,9 @@ i32 engine_run(Engine* engine) {
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
             .ambient = {
-                //.value = { .constant = fullbright ? 1.0f : 0.05f },
-                .value = { .map = { .id = TEXTURE_EARTH_AMBIENT } },
-                .type = VALUE_MAP_MAP,
+                .value = { .constant = fullbright ? 1.0f : 0.05f },
+                //.value = { .map = { .id = TEXTURE_EARTH_AMBIENT } },
+                .type = VALUE_MAP_CONSTANT,
             },
             .diffuse = 1.0f,
             .specular = 0.5f,
