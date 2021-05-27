@@ -456,6 +456,7 @@ i32 renderer_initialize() {
 	shader_compile_from_file("resource/shader/combine", &combine_shader);
 	shader_compile_from_file("resource/shader/blur", &blur_shader);
 	shader_compile_from_file("resource/shader/brightness_extract", &brightness_extract_shader);
+	render_state.use_post_processing = 1;
 	render_state.initialized = 1;
 	return 0;
 }
@@ -565,6 +566,14 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 
 void renderer_post_process() {
 	Render_state* renderer = &render_state;
+
+	if (!renderer->use_post_processing) {
+		render_fbo(FBO_COLOR, FBO_STANDARD_FRAMEBUFFER, (Fbo_attributes) {
+			.shader_id = texture_shader,
+		});
+		return;
+	}
+
 	render_fbo(FBO_COLOR, FBO_BRIGHTNESS_EXTRACT, (Fbo_attributes) {
 		.shader_id = texture_shader,
 	});
@@ -605,6 +614,10 @@ void renderer_post_process() {
 			},
 		}
 	});
+}
+
+void renderer_toggle_post_processing() {
+	render_state.use_post_processing = !render_state.use_post_processing;
 }
 
 void renderer_clear_fbos() {

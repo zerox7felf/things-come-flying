@@ -91,6 +91,9 @@ i32 engine_run(Engine* engine) {
         if (key_pressed[GLFW_KEY_B]) {
             fullbright = !fullbright;
         }
+        if (key_pressed[GLFW_KEY_P]) {
+			renderer_toggle_post_processing();
+        }
 
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();

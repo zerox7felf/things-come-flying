@@ -14,26 +14,26 @@ static float gaussian(int index, float sigma);
 static void write_gaussian_kernel(FILE* fp, float sigma, int count);
 
 float kernel(float sigma) {
-    return 1 + 2.0f * sqrt(-2.0f * sigma * sigma * log(0.005f));
+	return 1 + 2.0f * sqrt(-2.0f * sigma * sigma * log(0.005f));
 }
 
 float gaussian(int index, float sigma) {
-    return expf(-(index * index) / (2.0f * sigma * sigma));
+	return expf(-(index * index) / (2.0f * sigma * sigma));
 }
 
 void write_gaussian_kernel(FILE* fp, float sigma, int count) {
-    float kernel_size = kernel(sigma);
-    // fprintf(fp, "// kernel size: %g, sigma: %g\n", kernel_size, sigma);
-    for (int i = 0; i < count; i++) {
-        float value = gaussian(i, sigma);
-        fprintf(fp, "%lf", value);
-        if (i + 1 < count) {
-            fprintf(fp, ", ");
-        }
-        else {
-            fprintf(fp, "\n");
-        }
-    }
+	float kernel_size = kernel(sigma);
+	// fprintf(fp, "// kernel size: %g, sigma: %g\n", kernel_size, sigma);
+	for (int i = 0; i < count; i++) {
+		float value = gaussian(i, sigma);
+		fprintf(fp, "%lf", value);
+		if (i + 1 < count) {
+			fprintf(fp, ", ");
+		}
+		else {
+			fprintf(fp, "\n");
+		}
+	}
 }
 
 int main(void) {

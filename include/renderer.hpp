@@ -98,6 +98,7 @@ typedef struct Render_state {
 
 	Resources resources;
 	i32 depth_func;
+	u8 use_post_processing;
 	u8 initialized;
 } Render_state;
 
@@ -114,6 +115,8 @@ void renderer_unbind_fbo();
 void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr);
 
 void renderer_post_process();
+
+void renderer_toggle_post_processing();
 
 void renderer_clear_fbos();
 
