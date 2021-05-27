@@ -13,5 +13,6 @@ uniform float factor;
 void main() {
 	vec4 color = texture(texture0, texture_coord);
 	float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    out_color = color * brightness * factor;
+	color = vec4(brightness);
+    out_color = color * factor;
 }

@@ -96,7 +96,6 @@ i32 engine_run(Engine* engine) {
 		camera_update();
 
 		renderer_bind_fbo(FBO_COLOR);
-		renderer_clear_fbo();
 
 		render_skybox(CUBE_MAP_SPACE, 0.7f);
 
@@ -155,6 +154,25 @@ i32 engine_run(Engine* engine) {
 			.texture_mix = 0,
         });
 
+		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(4, 4, 4), MESH_SPHERE, (Material) {
+            .ambient = {
+                .value = { .constant = 1.0f },
+                .type = VALUE_MAP_CONST
+            },
+            .diffuse = {
+                .value = { .constant = 1.0f },
+                .type = VALUE_MAP_CONST
+            },
+            .specular = {
+                .value = { .constant = 0.5f },
+                .type = VALUE_MAP_CONST
+            },
+            .shininess = 10.0f,
+            .color_map = {.id = TEXTURE_SUN},
+			.texture1 = {},
+			.texture_mix = 0,
+        });
+
         /*render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
             .ambient = { .constant = fullbright ? 1.0f : 1.0f },
             .diffuse = 0.0f,
@@ -204,7 +222,7 @@ i32 engine_run(Engine* engine) {
 		renderer_post_process();
 
 		window_swap_buffers();
-		renderer_clear_fbo();
+		renderer_clear_fbos();
 	}
 	return NoError;
 }

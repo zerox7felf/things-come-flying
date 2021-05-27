@@ -319,6 +319,7 @@ void fbos_initialize(Render_state* renderer, i32 width, i32 height) {
 	for (i32 i = 0; i < MAX_FBO; ++i) {
 		Fbo* fbo = &renderer->fbos[i];
 		fbo_initialize(fbo, width, height);
+		renderer->fbo_count++;
 	}
 }
 
@@ -327,6 +328,7 @@ void fbos_unload(Render_state* renderer) {
 		Fbo* fbo = &renderer->fbos[i];
 		fbo_unload(fbo);
 	}
+	renderer->fbo_count = 0;
 }
 
 void fbo_initialize(Fbo* fbo, i32 width, i32 height) {
@@ -495,7 +497,6 @@ void renderer_unbind_fbo() {
 
 void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 	renderer_bind_fbo(target_fbo);
-	renderer_clear_fbo();
 
 	Render_state* renderer = &render_state;
 	Fbo* fbo = &renderer->fbos[fbo_id];
@@ -567,11 +568,28 @@ void renderer_post_process() {
 		.shader_id = brightness_extract_shader,
 		{
 			.extract = {
-				.factor = 2,
+				.factor = 1,
 			},
 		}
 	});
 
+	render_fbo(FBO_V_BLUR, FBO_H_BLUR, (Fbo_attributes) {
+		.shader_id = blur_shader,
+		{
+			.blur = {
+				.vertical = 1,
+			}
+		}
+	});
+
+	render_fbo(FBO_H_BLUR, FBO_V_BLUR, (Fbo_attributes) {
+		.shader_id = blur_shader,
+		{
+			.blur = {
+				.vertical = 0,
+			}
+		}
+	});
 	render_fbo(FBO_V_BLUR, FBO_H_BLUR, (Fbo_attributes) {
 		.shader_id = blur_shader,
 		{
@@ -595,10 +613,20 @@ void renderer_post_process() {
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
-				.mix = 0.2f,
-			}
+				.mix = 0.35,
+			},
 		}
 	});
+}
+
+void renderer_clear_fbos() {
+	Render_state* renderer = &render_state;
+	for (u32 i = 0; i < renderer->fbo_count; i++) {
+		renderer_bind_fbo(i);
+		renderer_clear_fbo();	// Clear the bound framebuffer object
+	}
+	renderer_unbind_fbo();
+	renderer_clear_fbo();	// Clear the normal framebuffer
 }
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {

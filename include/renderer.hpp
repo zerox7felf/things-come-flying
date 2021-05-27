@@ -115,6 +115,8 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr);
 
 void renderer_post_process();
 
+void renderer_clear_fbos();
+
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material);
 
 void render_skybox(u32 skybox_id, float brightness);
