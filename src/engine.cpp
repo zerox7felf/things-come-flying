@@ -33,6 +33,7 @@ i32 engine_run(Engine* engine) {
 	struct timeval prev = {0};
 	u8 follow_target = 0;
 	char title_string[TITLE_SIZE] = {0};
+    u8 fullbright = 0;
 	while (engine->is_running && window_poll_events() >= 0) {
 		prev = now;
 		gettimeofday(&now, NULL);
@@ -87,6 +88,9 @@ i32 engine_run(Engine* engine) {
 		if (key_pressed[GLFW_KEY_M]) {
 			window_toggle_cursor_visibility();
 		}
+        if (key_pressed[GLFW_KEY_B]) {
+            fullbright = !fullbright;
+        }
 
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
@@ -113,7 +117,7 @@ i32 engine_run(Engine* engine) {
 		}
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
-            .ambient = 0.05f,
+            .ambient = fullbright ? 1.0f : 0.05f,
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = shine,
@@ -123,7 +127,7 @@ i32 engine_run(Engine* engine) {
         });
 
         render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
-            .ambient = 1.0f,
+            .ambient = fullbright ? 1.0f : 1.0f,
             .diffuse = 0.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
@@ -133,7 +137,7 @@ i32 engine_run(Engine* engine) {
         });
 
 		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
-            .ambient = 0.01f,
+            .ambient = fullbright ? 1.0f : 0.01f,
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
@@ -143,7 +147,7 @@ i32 engine_run(Engine* engine) {
         });
 
 		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
-            .ambient = 0.01f,
+            .ambient = fullbright ? 1.0f : 0.01f,
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
@@ -153,7 +157,7 @@ i32 engine_run(Engine* engine) {
         });
 
 		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, MESH_GUY, (Material) {
-            .ambient = 0.02f,
+            .ambient = fullbright ? 1.0f : 0.02f,
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 1.0f,
@@ -163,7 +167,7 @@ i32 engine_run(Engine* engine) {
         });
 
         render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(1.0f, 1.0f, 1.0f), MESH_CUBE, (Material) {
-            .ambient = 0.1f,
+            .ambient = fullbright ? 1.0f : 0.1f,
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
