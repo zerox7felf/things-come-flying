@@ -60,6 +60,8 @@ enum Fbo_type {
 	FBO_STANDARD_FRAMEBUFFER = -1,
 	FBO_COLOR,
 	FBO_COMBINE,
+	FBO_V_BLUR,
+	FBO_H_BLUR,
 
 	MAX_FBO,
 };
@@ -73,6 +75,9 @@ typedef struct Fbo_attributes {
 		struct {
 			float value;
 		} color;
+		struct {
+			u8 vertical;
+		} blur;
 	};
 } Fbo_attributes;
 

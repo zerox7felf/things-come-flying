@@ -25,8 +25,9 @@ Render_state render_state = {0};
 
 u32 diffuse_shader = 0,
 	skybox_shader = 0,
-	texture_combine_shader = 0,
-	combine_shader = 0;
+	texture_shader = 0,
+	combine_shader = 0,
+	blur_shader = 0;
 
 Model cube_model;
 Fbo* current_fbo = NULL;
@@ -443,8 +444,9 @@ i32 renderer_initialize() {
 	render_state_initialize(&render_state);
 	shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
-	shader_compile_from_file("resource/shader/texture_combine", &texture_combine_shader);
+	shader_compile_from_file("resource/shader/texture", &texture_shader);
 	shader_compile_from_file("resource/shader/combine", &combine_shader);
+	shader_compile_from_file("resource/shader/blur", &blur_shader);
 	render_state.initialized = 1;
 	return 0;
 }
@@ -524,6 +526,11 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 			glBindTexture(GL_TEXTURE_2D, attr.combine.texture1);
 			break;
 		}
+		case FBO_V_BLUR:
+		case FBO_H_BLUR: {
+			glUniform1i(glGetUniformLocation(handle, "vertical"), attr.blur.vertical);
+			break;
+		}
 		default:
 			break;
 	}
@@ -546,9 +553,9 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 }
 
 void renderer_post_process() {
-	// Render the color fbo onto the combine fbo
-	render_fbo(FBO_COLOR, FBO_COMBINE, (Fbo_attributes) {
-		.shader_id = texture_combine_shader,
+	Render_state* renderer = &render_state;
+	render_fbo(FBO_COLOR, FBO_V_BLUR, (Fbo_attributes) {
+		.shader_id = texture_shader,
 		{
 			.color = {
 				.value = 1.0f,
@@ -556,12 +563,29 @@ void renderer_post_process() {
 		}
 	});
 
-	// Render the combine fbo onto the normal framebuffer
+	render_fbo(FBO_V_BLUR, FBO_H_BLUR, (Fbo_attributes) {
+		.shader_id = blur_shader,
+		{
+			.blur = {
+				.vertical = 1,
+			}
+		}
+	});
+
+	render_fbo(FBO_H_BLUR, FBO_COMBINE, (Fbo_attributes) {
+		.shader_id = blur_shader,
+		{
+			.blur = {
+				.vertical = 0,
+			}
+		}
+	});
+
 	render_fbo(FBO_COMBINE, FBO_STANDARD_FRAMEBUFFER, (Fbo_attributes) {
 		.shader_id = combine_shader,
 		{
 			.combine = {
-				.texture1 = 0,
+				.texture1 = renderer->fbos[FBO_COLOR].texture,
 			}
 		}
 	});
@@ -569,7 +593,6 @@ void renderer_post_process() {
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
 	Render_state* renderer = &render_state;
-	//u32 texture0 = renderer->textures[material.texture0.id];
 	u32 texture1 = renderer->textures[material.texture1.id];
 
     u32 color_map = renderer->textures[material.color_map.id];
@@ -679,7 +702,9 @@ void renderer_destroy() {
 
 	glDeleteShader(diffuse_shader);
 	glDeleteShader(skybox_shader);
-	glDeleteShader(texture_combine_shader);
+	glDeleteShader(texture_shader);
+	glDeleteShader(combine_shader);
+	glDeleteShader(blur_shader);
 	glDeleteVertexArrays(1, &quad_vao);
 	glDeleteVertexArrays(1, &quad_vbo);
 

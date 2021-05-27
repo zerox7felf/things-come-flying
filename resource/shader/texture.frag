@@ -1,4 +1,4 @@
-// texture_combine.frag
+// texture.frag
 
 #version 330 core
 

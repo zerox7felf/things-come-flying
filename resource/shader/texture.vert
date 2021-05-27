@@ -1,4 +1,4 @@
-// texture_combine.vert
+// texture.vert
 
 #version 330 core
 
