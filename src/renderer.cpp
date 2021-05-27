@@ -26,7 +26,8 @@ Render_state render_state = {0};
 u32 basic_shader = 0,
 	diffuse_shader = 0,
 	skybox_shader = 0,
-	texture_combine_shader = 0;
+	texture_combine_shader = 0,
+	combine_shader = 0;
 
 Model cube_model;
 Fbo* current_fbo = NULL;
@@ -467,6 +468,7 @@ i32 renderer_initialize() {
 	shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
 	shader_compile_from_file("resource/shader/texture_combine", &texture_combine_shader);
+	shader_compile_from_file("resource/shader/combine", &combine_shader);
 	render_state.initialized = 1;
 	return 0;
 }
@@ -480,34 +482,51 @@ void renderer_framebuffer_callback(i32 width, i32 height) {
 	fbos_initialize(renderer, width, height);
 }
 
-void renderer_clear_fbo(u32 fbo_id) {
-	Render_state* renderer = &render_state;
-	Fbo* fbo = &renderer->fbos[fbo_id];
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+// Clears the currently bound fbo
+void renderer_clear_fbo() {
+	Fbo* fbo = current_fbo;
+	if (fbo) {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+	}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void renderer_bind_fbo(u32 fbo_id) {
+void renderer_bind_fbo(i32 fbo_id) {
 	Render_state* renderer = &render_state;
-	Fbo* fbo = &renderer->fbos[fbo_id];
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+	if (fbo_id >= 0) {
+		Fbo* fbo = &renderer->fbos[fbo_id];
+		current_fbo = fbo;
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+	}
+	else {
+		current_fbo = NULL;
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 }
 
 void renderer_unbind_fbo() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	current_fbo = NULL;
 }
 
-void render_fbo(u32 fbo_id) {
+void render_fbo(i32 fbo_id, i32 target_fbo) {
+	renderer_bind_fbo(target_fbo);
 	Render_state* renderer = &render_state;
 	Fbo* fbo = &renderer->fbos[fbo_id];
 	u32 handle = texture_combine_shader;
+	if (fbo_id == FBO_COMBINE) {
+		handle = combine_shader;
+	}
 	glUseProgram(handle);
 	u32 texture = fbo->texture;
 
 	model = translate(V3(0, 0, 0));
 
-	model = multiply_mat4(model, scale_mat4(V3((float)fbo->width, (float)fbo->height, 0)));
+	model = multiply_mat4(model, scale_mat4(V3((float)window_width(), (float)window_height(), 0)));	// We use the window size for cases in which the fbo is smaller than the window.
 
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&ortho_projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
@@ -536,6 +555,11 @@ void render_fbo(u32 fbo_id) {
 	glDisableVertexAttribArray(0);
 
 	glUseProgram(0);
+}
+
+void renderer_post_process() {
+	render_fbo(FBO_COLOR, FBO_COMBINE);	// Render the color fbo onto the combine fbo
+	render_fbo(FBO_COMBINE, FBO_STANDARD_FRAMEBUFFER);	// Render the combine fbo onto the normal framebuffer
 }
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
