@@ -64,6 +64,18 @@ enum Fbo_type {
 	MAX_FBO,
 };
 
+typedef struct Fbo_attributes {
+	u32 shader_id;
+	union {
+		struct {
+			u32 texture1;
+		} combine;
+		struct {
+			float value;
+		} color;
+	};
+} Fbo_attributes;
+
 typedef struct Render_state {
 	u32 textures[MAX_TEXTURE];
 	u32 texture_count;
@@ -92,7 +104,7 @@ void renderer_bind_fbo(i32 fbo_id);
 
 void renderer_unbind_fbo();
 
-void render_fbo(i32 fbo_id, i32 target_fbo);
+void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr);
 
 void renderer_post_process();
 

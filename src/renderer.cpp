@@ -489,35 +489,44 @@ void renderer_unbind_fbo() {
 	current_fbo = NULL;
 }
 
-void render_fbo(i32 fbo_id, i32 target_fbo) {
+void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 	renderer_bind_fbo(target_fbo);
 	Render_state* renderer = &render_state;
 	Fbo* fbo = &renderer->fbos[fbo_id];
-	u32 handle = texture_combine_shader;
-	if (fbo_id == FBO_COMBINE) {
-		handle = combine_shader;
-	}
+
+	u32 handle = attr.shader_id;
+
 	glUseProgram(handle);
-	u32 texture = fbo->texture;
+	u32 texture0 = fbo->texture;
 
 	float width = window_width();
 	float height = window_height();
 
 	model = translate(V3(0, 0, 0));
-
 	model = multiply_mat4(model, scale_mat4(V3(width, height, 1)));
 
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&ortho_projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
 	glUniform1i(glGetUniformLocation(handle, "texture0"), 0);
-	glUniform1i(glGetUniformLocation(handle, "texture1"), 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+
+	// Do bindings depending on which fbo we are handling
+	switch (fbo_id) {
+		case FBO_COLOR: {
+			glUniform1f(glGetUniformLocation(handle, "value"), attr.color.value);
+			break;
+		}
+		case FBO_COMBINE: {
+			glUniform1i(glGetUniformLocation(handle, "texture1"), 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, attr.combine.texture1);
+			break;
+		}
+		default:
+			break;
+	}
 
 	glEnableVertexAttribArray(0);
 
@@ -537,8 +546,25 @@ void render_fbo(i32 fbo_id, i32 target_fbo) {
 }
 
 void renderer_post_process() {
-	render_fbo(FBO_COLOR, FBO_COMBINE);	// Render the color fbo onto the combine fbo
-	render_fbo(FBO_COMBINE, FBO_STANDARD_FRAMEBUFFER);	// Render the combine fbo onto the normal framebuffer
+	// Render the color fbo onto the combine fbo
+	render_fbo(FBO_COLOR, FBO_COMBINE, (Fbo_attributes) {
+		.shader_id = texture_combine_shader,
+		{
+			.color = {
+				.value = 1.0f,
+			}
+		}
+	});
+
+	// Render the combine fbo onto the normal framebuffer
+	render_fbo(FBO_COMBINE, FBO_STANDARD_FRAMEBUFFER, (Fbo_attributes) {
+		.shader_id = combine_shader,
+		{
+			.combine = {
+				.texture1 = 0,
+			}
+		}
+	});
 }
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
