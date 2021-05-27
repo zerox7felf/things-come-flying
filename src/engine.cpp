@@ -122,8 +122,14 @@ i32 engine_run(Engine* engine) {
                 //.value = { .map = { .id = TEXTURE_EARTH_AMBIENT } },
                 .type = VALUE_MAP_CONST,
             },
-            .diffuse = 1.0f,
-            .specular = 0.5f,
+            .diffuse = {
+                .value = { .constant = 1.0f },
+                .type = VALUE_MAP_CONST
+            },
+            .specular = {
+                .value = { .map = { .id = TEXTURE_EARTH_SPECULAR } },
+                .type = VALUE_MAP_MAP
+            },
             .shininess = shine,
             .color_map = {.id = TEXTURE_EARTH},
 			.texture1 = {.id = TEXTURE_EARTH_CLOUDS, .offset = V2(-0.05f * engine->total_time, 0)},
@@ -135,8 +141,14 @@ i32 engine_run(Engine* engine) {
                 .value = { .map = { .id = TEXTURE_ALIEN_AMBIENT } },
                 .type = VALUE_MAP_MAP
             },
-            .diffuse = 1.0f,
-            .specular = 0.5f,
+            .diffuse = {
+                .value = { .constant = 1.0f },
+                .type = VALUE_MAP_CONST
+            },
+            .specular = {
+                .value = { .constant = 0.5f },
+                .type = VALUE_MAP_CONST
+            },
             .shininess = 10.0f,
             .color_map = {.id = TEXTURE_ALIEN},
 			.texture1 = {},
