@@ -56,9 +56,20 @@ extern mat4 ortho_projection;
 extern mat4 view;
 extern mat4 model;
 
+enum Fbo_type {
+	FBO_STANDARD_FRAMEBUFFER = -1,
+	FBO_COLOR,
+	FBO_COMBINE,
+
+	MAX_FBO,
+};
+
 typedef struct Render_state {
 	u32 textures[MAX_TEXTURE];
 	u32 texture_count;
+
+	Fbo fbos[MAX_FBO];
+	u32 fbo_count;
 
 	u32 cube_maps[MAX_CUBE_MAP];
 	u32 cube_map_count;
@@ -77,13 +88,15 @@ void renderer_framebuffer_callback(i32 width, i32 height);
 
 void renderer_clear_fbo();
 
-void renderer_bind_fbo();
+void renderer_bind_fbo(i32 fbo_id);
 
 void renderer_unbind_fbo();
 
-void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material);
+void render_fbo(i32 fbo_id, i32 target_fbo);
 
-void render_fbo();
+void renderer_post_process();
+
+void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material);
 
 void render_skybox(u32 skybox_id, float brightness);
 
