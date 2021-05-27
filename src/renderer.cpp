@@ -543,8 +543,11 @@ void renderer_post_process() {
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
 	Render_state* renderer = &render_state;
-	u32 texture0 = renderer->textures[material.texture0.id];
+	//u32 texture0 = renderer->textures[material.texture0.id];
 	u32 texture1 = renderer->textures[material.texture1.id];
+
+    u32 color_map = renderer->textures[material.color_map.id];
+    u32 ambient_map = renderer->textures[material.ambient.type == VALUE_MAP_MAP ? material.ambient.value.map.id : 0];
 	Model* mesh = &renderer->models[mesh_id];
 
 	u32 handle = diffuse_shader;
@@ -564,10 +567,19 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glUniformMatrix4fv(glGetUniformLocation(handle, "PVM"), 1, GL_FALSE, (float*)&PVM);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "VM_normal"), 1, GL_FALSE, (float*)&VM_normal);
 
-	glUniform2fv(glGetUniformLocation(handle, "offset0"), 1, (float*)&material.texture0.offset);
+    v2 default_offset = V2(0.0f, 0.0f);
+	glUniform2fv(glGetUniformLocation(handle, "color_map_offset"), 1, (float*)&material.color_map.offset);
+	glUniform2fv(
+        glGetUniformLocation(handle, "ambient_map_offset"), 1,
+        material.ambient.type == VALUE_MAP_MAP ? (float*)&material.ambient.value.map.offset : (float*)&default_offset
+    );
+
 	glUniform2fv(glGetUniformLocation(handle, "offset1"), 1, (float*)&material.texture1.offset);
 	glUniform1f(glGetUniformLocation(handle, "texture_mix"), material.texture_mix);
-	glUniform1f(glGetUniformLocation(handle, "ambient_amp"), material.ambient);
+
+    // Mappable values
+    // If type is not VALUE_MAP_CONST, set their value to -1 (which isn't valid to the shader normally, so should be fine as a flag)
+	glUniform1f(glGetUniformLocation(handle, "ambient_amp"), material.ambient.type == VALUE_MAP_CONST ? material.ambient.value.constant : -1.0f);
 	glUniform1f(glGetUniformLocation(handle, "diffuse_amp"), material.diffuse);
 	glUniform1f(glGetUniformLocation(handle, "specular_amp"), material.specular);
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
@@ -583,13 +595,17 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glEnableVertexAttribArray(2);	// normals
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
+	glBindTexture(GL_TEXTURE_2D, color_map);
 
 	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, ambient_map);
+
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
-	glUniform1i(glGetUniformLocation(handle, "obj_texture0"), 0);	// We bind to use the 0th sampler
-	glUniform1i(glGetUniformLocation(handle, "obj_texture1"), 1);	// We bind to use the 1st sampler
+	glUniform1i(glGetUniformLocation(handle, "color_map"), 0);
+	glUniform1i(glGetUniformLocation(handle, "ambient_map"), 1);
+	glUniform1i(glGetUniformLocation(handle, "obj_texture1"), 2);
 
 	glDrawElements(GL_TRIANGLES, mesh->draw_count, GL_UNSIGNED_INT, 0);
 

@@ -4,10 +4,13 @@
 #include "resource.hpp"
 
 const char* texture_path[MAX_TEXTURE] = {
+	"resource/texture/missing.png",
 	"resource/texture/earth_daymap.png",
 	"resource/texture/earth_clouds.png",
+	"resource/texture/earth_ambient.png",
 	"resource/texture/sun.png",
 	"resource/texture/alien.png",
+	"resource/texture/alien_ambient.png",
 	"resource/texture/moon.png",
 	"resource/texture/monster.png",
 	"resource/texture/green.png",

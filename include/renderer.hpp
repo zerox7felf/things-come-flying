@@ -26,14 +26,29 @@ typedef struct Texture {
 	v2 offset = V2(0, 0);
 } Texture;
 
+typedef union Value_map_value {
+    float constant;
+    Texture map;
+} Value_map_value;
+
+enum Value_map_type {
+    VALUE_MAP_MAP = 0,
+    VALUE_MAP_CONST = 1,
+};
+
+typedef struct Value_map {
+    Value_map_value value;
+    u8 type;
+} Value_map;
+
 typedef struct Material {
-  float ambient;
-  float diffuse;
-  float specular;
-  float shininess;
-  Texture texture0;
-  Texture texture1;
-  float texture_mix;
+    Value_map ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+    Texture color_map;
+    Texture texture1;
+    float texture_mix;
 } Material;
 
 extern mat4 projection;
