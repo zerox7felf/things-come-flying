@@ -71,6 +71,7 @@ typedef struct Fbo_attributes {
 	union {
 		struct {
 			u32 texture1;
+			float mix;
 		} combine;
 		struct {
 			float value;

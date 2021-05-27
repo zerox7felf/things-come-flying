@@ -524,6 +524,7 @@ void render_fbo(i32 fbo_id, i32 target_fbo, Fbo_attributes attr) {
 			glUniform1i(glGetUniformLocation(handle, "texture1"), 1);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, attr.combine.texture1);
+			glUniform1f(glGetUniformLocation(handle, "mix"), attr.combine.mix);
 			break;
 		}
 		case FBO_V_BLUR:
@@ -586,6 +587,7 @@ void renderer_post_process() {
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
+				.mix = 0.3f,
 			}
 		}
 	});
