@@ -23,8 +23,7 @@ mat4 model;
 
 Render_state render_state = {0};
 
-u32 basic_shader = 0,
-	diffuse_shader = 0,
+u32 diffuse_shader = 0,
 	skybox_shader = 0,
 	texture_combine_shader = 0,
 	combine_shader = 0;
@@ -96,28 +95,6 @@ float cube_vertices[] = {
 	CUBE_SIZE, -CUBE_SIZE,  CUBE_SIZE
 };
 
-static const char* vert_source_code =
-	"#version 330 core\n"
-	"\n"
-	"in vec3 position;\n"
-	"\n"
-	"uniform mat4 projection;\n"
-	"uniform mat4 view;\n"
-	"uniform mat4 model;\n"
-	"\n"
-	"void main() {\n"
-	"	gl_Position = projection * view * model * vec4(position, 1);\n"
-	"}\n";
-
-static const char* frag_source_code =
-	"#version 330 core\n"
-	"\n"
-	"out vec4 out_color;\n"
-	"\n"
-	"void main() {\n"
-	"	out_color = vec4(1, 0, 0, 1);\n"
-	"}\n";
-
 static void opengl_initialize(Render_state* renderer);
 static i32 render_state_initialize(Render_state* renderer);
 static i32 shader_compile_from_source(const char* vert_source, const char* frag_source, u32* program_out);
@@ -176,13 +153,13 @@ i32 shader_compile_from_source(const char* vert_source, const char* frag_source,
 	glLinkProgram(program);
 
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &compile_report);
-    #if 0
+#if 0
 	if (!compile_report) {
 		glGetProgramInfoLog(program, SHADER_ERROR_BUFFER_SIZE, NULL, err_log);
 		fprintf(stderr, "shader compile error: %s\n", err_log);
 		goto done;
 	}
-    #endif
+#endif
 
 	*program_out = program;
 
@@ -363,16 +340,16 @@ void fbo_initialize(Fbo* fbo, i32 width, i32 height) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	glGenTextures(1, &fbo->depth);
 	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// NOTE(lucas): Was GL_CLAMP_TO_EDGE
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fbo->texture, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fbo->depth, 0);
@@ -464,7 +441,6 @@ i32 renderer_initialize() {
 	model = mat4d(1.0f);
 
 	render_state_initialize(&render_state);
-	shader_compile_from_source(vert_source_code, frag_source_code, &basic_shader);
 	shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
 	shader_compile_from_file("resource/shader/texture_combine", &texture_combine_shader);
@@ -524,9 +500,12 @@ void render_fbo(i32 fbo_id, i32 target_fbo) {
 	glUseProgram(handle);
 	u32 texture = fbo->texture;
 
+	float width = window_width();
+	float height = window_height();
+
 	model = translate(V3(0, 0, 0));
 
-	model = multiply_mat4(model, scale_mat4(V3((float)window_width(), (float)window_height(), 0)));	// We use the window size for cases in which the fbo is smaller than the window.
+	model = multiply_mat4(model, scale_mat4(V3(width, height, 1)));
 
 	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&ortho_projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
@@ -656,7 +635,6 @@ void render_skybox(u32 skybox_id, float brightness) {
 void renderer_destroy() {
 	Render_state* renderer = &render_state;
 
-	glDeleteShader(basic_shader);
 	glDeleteShader(diffuse_shader);
 	glDeleteShader(skybox_shader);
 	glDeleteShader(texture_combine_shader);
