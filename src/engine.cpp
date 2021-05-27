@@ -120,7 +120,7 @@ i32 engine_run(Engine* engine) {
             .ambient = {
                 .value = { .constant = fullbright ? 1.0f : 0.05f },
                 //.value = { .map = { .id = TEXTURE_EARTH_AMBIENT } },
-                .type = VALUE_MAP_CONSTANT,
+                .type = VALUE_MAP_CONST,
             },
             .diffuse = 1.0f,
             .specular = 0.5f,
