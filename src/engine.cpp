@@ -91,8 +91,8 @@ i32 engine_run(Engine* engine) {
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		camera_update();
 
-		renderer_bind_fbo();
-		renderer_clear_fbo();
+		renderer_bind_fbo(FBO_COLOR);
+		renderer_clear_fbo(FBO_COLOR);
 
 		render_skybox(CUBE_MAP_SPACE, 0.7f);
 
@@ -176,7 +176,7 @@ i32 engine_run(Engine* engine) {
 
 		renderer_unbind_fbo();
 
-		render_fbo();
+		render_fbo(FBO_COLOR);
 
 		snprintf(title_string, TITLE_SIZE, "Solar System | %i fps | %g delta", (i32)(1.0f / engine->delta_time), engine->delta_time);
 

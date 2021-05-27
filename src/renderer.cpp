@@ -29,7 +29,7 @@ u32 basic_shader = 0,
 	texture_combine_shader = 0;
 
 Model cube_model;
-Fbo current_fbo;
+Fbo* current_fbo = NULL;
 
 #define SHADER_ERROR_BUFFER_SIZE 512
 
@@ -129,6 +129,8 @@ static i32 upload_model(Model* model, Mesh* mesh);
 static void unload_model(Model* model);
 static void unload_texture(u32* texture_id);
 static void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, void* data);
+static void fbos_initialize(Render_state* renderer, i32 width, i32 height);
+static void fbos_unload(Render_state* renderer);
 static void fbo_initialize(Fbo* fbo, i32 width, i32 height);
 static void fbo_unload(Fbo* fbo);
 
@@ -333,6 +335,20 @@ void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, voi
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void fbos_initialize(Render_state* renderer, i32 width, i32 height) {
+	for (i32 i = 0; i < MAX_FBO; ++i) {
+		Fbo* fbo = &renderer->fbos[i];
+		fbo_initialize(fbo, width, height);
+	}
+}
+
+void fbos_unload(Render_state* renderer) {
+	for (i32 i = 0; i < MAX_FBO; ++i) {
+		Fbo* fbo = &renderer->fbos[i];
+		fbo_unload(fbo);
+	}
+}
+
 void fbo_initialize(Fbo* fbo, i32 width, i32 height) {
 	fbo->width = width;
 	fbo->height = height;
@@ -431,8 +447,9 @@ i32 render_state_initialize(Render_state* renderer) {
 		renderer->model_count++;
 	}
 
+	renderer->fbo_count = 0;
 	upload_model(&cube_model, cube_vertices, ARR_SIZE(cube_vertices));
-	fbo_initialize(&current_fbo, window_width(), window_height());
+	fbos_initialize(renderer, window_width(), window_height());
 	return NoError;
 }
 
@@ -455,29 +472,70 @@ i32 renderer_initialize() {
 }
 
 void renderer_framebuffer_callback(i32 width, i32 height) {
-	if (!render_state.initialized)
+	Render_state* renderer = &render_state;
+	if (!renderer->initialized) {
 		return;
-	Fbo* fbo = &current_fbo;
-	if (fbo->texture > 0) {
-		fbo_unload(fbo);
 	}
-	fbo_initialize(fbo, width, height);
+	fbos_unload(renderer);
+	fbos_initialize(renderer, width, height);
 }
 
-void renderer_clear_fbo() {
-	Fbo* fbo = &current_fbo;
+void renderer_clear_fbo(u32 fbo_id) {
+	Render_state* renderer = &render_state;
+	Fbo* fbo = &renderer->fbos[fbo_id];
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void renderer_bind_fbo() {
-	Fbo* fbo = &current_fbo;
+void renderer_bind_fbo(u32 fbo_id) {
+	Render_state* renderer = &render_state;
+	Fbo* fbo = &renderer->fbos[fbo_id];
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
 }
 
 void renderer_unbind_fbo() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void render_fbo(u32 fbo_id) {
+	Render_state* renderer = &render_state;
+	Fbo* fbo = &renderer->fbos[fbo_id];
+	u32 handle = texture_combine_shader;
+	glUseProgram(handle);
+	u32 texture = fbo->texture;
+
+	model = translate(V3(0, 0, 0));
+
+	model = multiply_mat4(model, scale_mat4(V3((float)fbo->width, (float)fbo->height, 0)));
+
+	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&ortho_projection);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glUniform1i(glGetUniformLocation(handle, "texture0"), 0);
+	glUniform1i(glGetUniformLocation(handle, "texture1"), 1);
+
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(quad_vao);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glBindVertexArray(0);
+
+	glDisableVertexAttribArray(0);
+
+	glUseProgram(0);
 }
 
 void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
@@ -541,46 +599,6 @@ void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material materi
 	glUseProgram(0);
 }
 
-void render_fbo() {
-	Fbo* fbo = &current_fbo;
-	u32 handle = texture_combine_shader;
-	glUseProgram(handle);
-	u32 texture = fbo->texture;
-
-	model = translate(V3(0, 0, 0));
-
-	model = multiply_mat4(model, scale_mat4(V3((float)window_width(), (float)window_height(), 0)));
-
-	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&ortho_projection);
-	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glUniform1i(glGetUniformLocation(handle, "texture0"), 0);
-	glUniform1i(glGetUniformLocation(handle, "texture1"), 1);
-
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(quad_vao);
-
-	glDisable(GL_DEPTH_TEST);
-
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	glEnable(GL_DEPTH_TEST);
-
-	glBindVertexArray(0);
-
-	glDisableVertexAttribArray(0);
-
-	glUseProgram(0);
-}
-
-
 void render_skybox(u32 skybox_id, float brightness) {
 	Render_state* renderer = &render_state;
 	u32 texture = renderer->cube_maps[skybox_id];
@@ -641,5 +659,5 @@ void renderer_destroy() {
 
 	resources_unload(&render_state.resources);
 	unload_model(&cube_model);
-	fbo_unload(&current_fbo);
+	fbos_unload(renderer);
 }
