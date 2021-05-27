@@ -117,17 +117,34 @@ i32 engine_run(Engine* engine) {
 		}
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
-            .ambient = fullbright ? 1.0f : 0.05f,
+            .ambient = {
+                //.value = { .constant = fullbright ? 1.0f : 0.05f },
+                .value = { .map = { .id = TEXTURE_EARTH_AMBIENT } },
+                .type = VALUE_MAP_MAP,
+            },
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = shine,
-            .texture0 = {.id = TEXTURE_EARTH},
+            .color_map = {.id = TEXTURE_EARTH},
 			.texture1 = {.id = TEXTURE_EARTH_CLOUDS, .offset = V2(-0.05f * engine->total_time, 0)},
 			.texture_mix = 1.0f,
         });
 
-        render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
-            .ambient = fullbright ? 1.0f : 1.0f,
+		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
+            .ambient = {
+                .value = { .map = { .id = TEXTURE_ALIEN_AMBIENT } },
+                .type = VALUE_MAP_MAP
+            },
+            .diffuse = 1.0f,
+            .specular = 0.5f,
+            .shininess = 10.0f,
+            .color_map = {.id = TEXTURE_ALIEN},
+			.texture1 = {},
+			.texture_mix = 0,
+        });
+
+        /*render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
+            .ambient = { .constant = fullbright ? 1.0f : 1.0f },
             .diffuse = 0.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
@@ -136,18 +153,8 @@ i32 engine_run(Engine* engine) {
 			.texture_mix = 0,
         });
 
-		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
-            .ambient = fullbright ? 1.0f : 0.01f,
-            .diffuse = 1.0f,
-            .specular = 0.5f,
-            .shininess = 10.0f,
-            .texture0 = {.id = TEXTURE_ALIEN},
-			.texture1 = {},
-			.texture_mix = 0,
-        });
-
 		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
-            .ambient = fullbright ? 1.0f : 0.01f,
+            .ambient = { .constant = fullbright ? 1.0f : 0.01f },
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
@@ -157,7 +164,7 @@ i32 engine_run(Engine* engine) {
         });
 
 		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, MESH_GUY, (Material) {
-            .ambient = fullbright ? 1.0f : 0.02f,
+            .ambient = { .constant = fullbright ? 1.0f : 0.02f },
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 1.0f,
@@ -167,14 +174,14 @@ i32 engine_run(Engine* engine) {
         });
 
         render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(1.0f, 1.0f, 1.0f), MESH_CUBE, (Material) {
-            .ambient = fullbright ? 1.0f : 0.1f,
+            .ambient = { .constant = fullbright ? 1.0f : 0.1f },
             .diffuse = 1.0f,
             .specular = 0.5f,
             .shininess = 10.0f,
             .texture0 = {.id = TEXTURE_MOON},
 			.texture1 = {},
 			.texture_mix = 0,
-        });
+        });*/
 
 		angle = 10 * engine->total_time;
 
