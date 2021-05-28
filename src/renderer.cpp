@@ -288,6 +288,8 @@ i32 upload_model(Model* model, Mesh* mesh) {
 	store_attribute(model, 0, 3, mesh->vertex_count * sizeof(v3), &mesh->vertices[0]);
 	store_attribute(model, 1, 2, mesh->uv_count * sizeof(v2), &mesh->uv[0]);
 	store_attribute(model, 2, 3, mesh->normal_count * sizeof(v3), &mesh->normals[0]);
+	store_attribute(model, 3, 3, mesh->tangent_count * sizeof(v3), &mesh->tangents[0]);
+	store_attribute(model, 4, 3, mesh->bitangent_count * sizeof(v3), &mesh->bitangents[0]);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_index_count * sizeof(u32), &mesh->vertex_indices[0], GL_STATIC_DRAW);
@@ -643,6 +645,7 @@ void render_mesh(v3 position, v3 rotation, v3 size, i32 mesh_id, Material materi
     u32 ambient_map = renderer->textures[material.ambient.type == VALUE_MAP_MAP ? material.ambient.value.map.id : 0];
     u32 diffuse_map = renderer->textures[material.diffuse.type == VALUE_MAP_MAP ? material.diffuse.value.map.id : 0];
     u32 specular_map = renderer->textures[material.specular.type == VALUE_MAP_MAP ? material.specular.value.map.id : 0];
+    u32 normal_map = renderer->textures[material.normal.type == VALUE_MAP_MAP ? material.normal.value.map.id : 0];
 	Model* mesh = &renderer->models[mesh_id];
 
 	u32 handle = diffuse_shader;
@@ -676,6 +679,10 @@ void render_mesh(v3 position, v3 rotation, v3 size, i32 mesh_id, Material materi
         glGetUniformLocation(handle, "specular_map_offset"), 1,
         material.specular.type == VALUE_MAP_MAP ? (float*)&material.specular.value.map.offset : (float*)&default_offset
     );
+	glUniform2fv(
+        glGetUniformLocation(handle, "normal_map_offset"), 1,
+        material.normal.type == VALUE_MAP_MAP ? (float*)&material.normal.value.map.offset : (float*)&default_offset
+    );
 
 	glUniform2fv(glGetUniformLocation(handle, "offset1"), 1, (float*)&material.texture1.offset);
 	glUniform1f(glGetUniformLocation(handle, "texture_mix"), material.texture_mix);
@@ -685,6 +692,8 @@ void render_mesh(v3 position, v3 rotation, v3 size, i32 mesh_id, Material materi
 	glUniform1f(glGetUniformLocation(handle, "ambient_amp"), material.ambient.type == VALUE_MAP_CONST ? material.ambient.value.constant : -1.0f);
 	glUniform1f(glGetUniformLocation(handle, "diffuse_amp"), material.diffuse.type == VALUE_MAP_CONST ? material.diffuse.value.constant : -1.0f);
 	glUniform1f(glGetUniformLocation(handle, "specular_amp"), material.specular.type == VALUE_MAP_CONST ? material.specular.value.constant : -1.0f);
+	glUniform1f(glGetUniformLocation(handle, "normal_amp"), material.normal.type == VALUE_MAP_CONST ? material.normal.value.constant : -1.0f);
+    // TODO: this -^ is kinda strange and acts like a flag. normals will never be scaled. better solution?
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
 
 	v4 light_position = multiply_mat4_v4(view, V4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -710,13 +719,17 @@ void render_mesh(v3 position, v3 rotation, v3 size, i32 mesh_id, Material materi
 	glBindTexture(GL_TEXTURE_2D, specular_map);
 
 	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, normal_map);
+
+	glActiveTexture(GL_TEXTURE5);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
 	glUniform1i(glGetUniformLocation(handle, "color_map"), 0);
 	glUniform1i(glGetUniformLocation(handle, "ambient_map"), 1);
 	glUniform1i(glGetUniformLocation(handle, "diffuse_map"), 2);
 	glUniform1i(glGetUniformLocation(handle, "specular_map"), 3);
-	glUniform1i(glGetUniformLocation(handle, "obj_texture1"), 4);
+	glUniform1i(glGetUniformLocation(handle, "normal_map"), 4);
+	glUniform1i(glGetUniformLocation(handle, "obj_texture1"), 5);
 
 	glDrawElements(GL_TRIANGLES, mesh->draw_count, GL_UNSIGNED_INT, 0);
 

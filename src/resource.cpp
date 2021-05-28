@@ -15,6 +15,9 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/alien_ambient.png",
 	"resource/texture/alien_specular.png",
 	"resource/texture/moon.png",
+	"resource/texture/shingles_diffuse.png",
+	"resource/texture/shingles_specular.png",
+	"resource/texture/shingles_normal.png",
 	"resource/texture/monster.png",
 	"resource/texture/green.png",
 	"resource/texture/white.png",
@@ -33,7 +36,8 @@ const char* mesh_path[MAX_MESH] = {
 	"resource/mesh/sphere.obj",
 	"resource/mesh/cube.obj",
 	"resource/mesh/monster.obj",
-    "resource/mesh/monke.obj"
+    "resource/mesh/monke.obj",
+    "resource/mesh/bent_plane.obj"
 };
 
 void resources_initialize(Resources* resources) {

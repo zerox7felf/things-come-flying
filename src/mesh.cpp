@@ -34,6 +34,10 @@ void mesh_initialize(Mesh* mesh) {
 	mesh->normal_count = 0;
 	mesh->normal_indices = NULL;
 	mesh->normal_index_count = 0;
+    mesh->tangents = NULL;
+    mesh->tangent_count = 0;
+    mesh->bitangents = NULL;
+    mesh->bitangent_count = 0;
 #endif
 }
 
@@ -53,17 +57,23 @@ i32 mesh_sort_indices(Mesh* mesh) {
 
         v2 current_uv = mesh->uv[uv_index];
         v3 current_normal = mesh->normals[normal_index];
+
         if (uv_flags[index] || normal_flags[index]) {
-            // Vertex in use
+            // Index in use
             if (uv[index] != current_uv || normals[index] != current_normal) {
                 // Data not identical, make new vertex.
                 list_push(mesh->vertices, mesh->vertex_count, mesh->vertices[index]);
+
+                v3 current_tangent = mesh->tangents[index];
+                v3 current_bitangent = mesh->bitangents[index];
+                list_push(mesh->tangents, mesh->tangent_count, current_tangent);
+                list_push(mesh->bitangents, mesh->bitangent_count, current_bitangent);
+
                 index = mesh->vertex_count - 1;
                 mesh->vertex_indices[i] = index;
 
                 uv[index] = current_uv;
                 //uv_flags[index] = 1;
-
                 normals[index] = current_normal;
                 //normal_flags[index] = 1;
             }
@@ -120,14 +130,14 @@ i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
 			list_push(mesh->normals, mesh->normal_count, normal);
 		}
 		else if (!strncmp(line, "f", MAX_LINE_SIZE)) {
-			u32 x[3] = {0};	// vertex indices
-			u32 y[3] = {0};	// uv indices
-			u32 z[3] = {0}; // normal indices
+			u32 vi[3] = {0};	// vertex indices
+			u32 ui[3] = {0};	// uv indices
+			u32 ni[3] = {0}; // normal indices
 			safe_scanf(scan_status, iterator,
 				"%i/%i/%i %i/%i/%i %i/%i/%i",
-				&x[0], &y[0], &z[0],
-				&x[1], &y[1], &z[1],
-				&x[2], &y[2], &z[2]
+				&vi[0], &ui[0], &ni[0],
+				&vi[1], &ui[1], &ni[1],
+				&vi[2], &ui[2], &ni[2]
 			);
 			if (scan_status != 9) {
 				fprintf(stderr, "Failed to parse wavefront object file '%s'\n", path);
@@ -135,17 +145,53 @@ i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
 				result = Error;
 				goto done;
 			}
-			list_push(mesh->vertex_indices, mesh->vertex_index_count, x[0] - 1);
-			list_push(mesh->vertex_indices, mesh->vertex_index_count, x[1] - 1);
-			list_push(mesh->vertex_indices, mesh->vertex_index_count, x[2] - 1);
 
-			list_push(mesh->uv_indices, mesh->uv_index_count, y[0] - 1);
-			list_push(mesh->uv_indices, mesh->uv_index_count, y[1] - 1);
-			list_push(mesh->uv_indices, mesh->uv_index_count, y[2] - 1);
+			list_push(mesh->vertex_indices, mesh->vertex_index_count, vi[0] - 1);
+			list_push(mesh->vertex_indices, mesh->vertex_index_count, vi[1] - 1);
+			list_push(mesh->vertex_indices, mesh->vertex_index_count, vi[2] - 1);
 
-			list_push(mesh->normal_indices, mesh->normal_index_count, z[0] - 1);
-			list_push(mesh->normal_indices, mesh->normal_index_count, z[1] - 1);
-			list_push(mesh->normal_indices, mesh->normal_index_count, z[2] - 1);
+			list_push(mesh->uv_indices, mesh->uv_index_count, ui[0] - 1);
+			list_push(mesh->uv_indices, mesh->uv_index_count, ui[1] - 1);
+			list_push(mesh->uv_indices, mesh->uv_index_count, ui[2] - 1);
+
+			list_push(mesh->normal_indices, mesh->normal_index_count, ni[0] - 1);
+			list_push(mesh->normal_indices, mesh->normal_index_count, ni[1] - 1);
+			list_push(mesh->normal_indices, mesh->normal_index_count, ni[2] - 1);
+
+            // Calculate face tangent and bitangent
+            v3 p1 = mesh->vertices[vi[0] - 1];
+            v3 p2 = mesh->vertices[vi[1] - 1];
+            v3 p3 = mesh->vertices[vi[2] - 1];
+
+            v2 uv1 = mesh->uv[ui[0] - 1];
+            v2 uv2 = mesh->uv[ui[1] - 1];
+            v2 uv3 = mesh->uv[ui[2] - 1];
+
+            v3 e1 = p2 - p1;
+            v3 e2 = p3 - p1;
+            v2 d_uv1 = uv2 - uv1;
+            v2 d_uv2 = uv3 - uv1;
+
+            float d = d_uv1.x * d_uv2.y - d_uv1.y * d_uv2.x;
+            float fraction = 1.0f / d;
+            v3 tangent = V3(
+                fraction * (d_uv2.y * e1.x - d_uv1.y * e2.x),
+                fraction * (d_uv2.y * e1.y - d_uv1.y * e2.y),
+                fraction * (d_uv2.y * e1.z - d_uv1.y * e2.z)
+            );
+            v3 bitangent = V3(
+                fraction * (-d_uv2.x * e1.x + d_uv1.x * e2.x),
+                fraction * (-d_uv2.x * e1.y + d_uv1.x * e2.y),
+                fraction * (-d_uv2.x * e1.z + d_uv1.x * e2.z)
+            );
+
+            // TODO: reuse face's values for each vertex
+            list_push(mesh->tangents, mesh->tangent_count, tangent);
+            list_push(mesh->tangents, mesh->tangent_count, tangent);
+            list_push(mesh->tangents, mesh->tangent_count, tangent);
+            list_push(mesh->bitangents, mesh->bitangent_count, bitangent);
+            list_push(mesh->bitangents, mesh->bitangent_count, bitangent);
+            list_push(mesh->bitangents, mesh->bitangent_count, bitangent);
 		}
 	}
 	if (sort_mesh) {

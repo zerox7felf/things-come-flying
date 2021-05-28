@@ -43,8 +43,9 @@ typedef struct Value_map {
 
 typedef struct Material {
     Value_map ambient;
-    Value_map diffuse;
+    Value_map diffuse; //TODO: rename color_map to diffuse_map and remove this field.
     Value_map specular;
+    Value_map normal;
     float shininess;
     Texture color_map;
     Texture texture1;

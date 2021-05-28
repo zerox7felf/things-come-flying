@@ -23,6 +23,12 @@ typedef struct Mesh {
 
 	u32* normal_indices;
 	u32 normal_index_count;
+
+    v3* tangents;
+    u32 tangent_count;
+
+    v3* bitangents;
+    u32 bitangent_count;
 } Mesh;
 
 i32 mesh_sort_indices(Mesh* mesh);

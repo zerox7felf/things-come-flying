@@ -44,11 +44,27 @@ void engine_initialize(Engine* engine) {
 			.value = { .constant = 1.0f, },
 			.type = VALUE_MAP_CONST,
 		},
-		.shininess = 1.0f,	// NOTE(lucas): Looks a bit strange in lower shininess values
+        .normal = {
+            .value = { .constant = 1.0f }, // NOTE(linus): Constants here be ignored by shader, but they remain to keep normal maps optional.
+            .type = VALUE_MAP_CONST
+        },
+		.shininess = 10.0f,	// NOTE(lucas): Looks a bit strange in lower shininess values
+                            // NOTE(linus): ~10 should be a better default
 		.color_map = { .id = TEXTURE_WHITE, },
 		.texture1 = {},
 		.texture_mix = 0,
 	};
+
+    Entity* plane = engine_push_empty_entity(engine);
+    entity_initialize(plane, V3(35, 0, 15), V3(1, 1, 1), V3(0, 0, 0), ENTITY_NONE, MESH_BENT_PLANE, NULL);
+    Material plane_material = base;
+    plane_material.ambient.value.constant = 0.1f;
+    plane_material.specular.value.map.id = TEXTURE_SHINGLES_SPECULAR;
+    plane_material.specular.type = VALUE_MAP_MAP;
+    plane_material.normal.value.map.id = TEXTURE_SHINGLES_NORMAL;
+    plane_material.normal.type = VALUE_MAP_MAP;
+    plane_material.color_map.id = TEXTURE_SHINGLES;
+    entity_attach_material(plane, plane_material);
 
 	Entity* sun = engine_push_empty_entity(engine);
 	entity_initialize(sun, V3(0, 0, 0), V3(3, 3, 3), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL);

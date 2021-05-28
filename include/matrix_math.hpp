@@ -73,6 +73,24 @@ inline bool operator!=(v2 a, v2 b) {
             a.y != b.y;
 }
 
+inline v2 operator-(v2 a, v2 b) {
+	v2 result = a;
+
+	result.x -= b.x;
+	result.y -= b.y;
+
+	return result;
+}
+
+inline v2 operator+(v2 a, v2 b) {
+	v2 result = a;
+
+	result.x += b.x;
+	result.y += b.y;
+
+	return result;
+}
+
 inline bool operator==(v3 a, v3 b) {
     return  a.x == b.x &&
             a.y == b.y &&

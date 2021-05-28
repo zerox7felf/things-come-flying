@@ -5,6 +5,7 @@
 in vec3 surface_normal;
 in vec2 texture_coord;
 in vec3 viewspace_position;
+in mat3 TBN;
 
 out vec4 out_color;
 
@@ -23,6 +24,9 @@ uniform vec2 specular_map_offset;
 uniform sampler2D diffuse_map;
 uniform vec2 diffuse_map_offset;
 
+uniform sampler2D normal_map;
+uniform vec2 normal_map_offset;
+
 uniform sampler2D obj_texture1;
 uniform vec2 offset1;
 
@@ -30,6 +34,7 @@ uniform float texture_mix;
 uniform float ambient_amp;
 uniform float diffuse_amp;
 uniform float specular_amp;
+uniform float normal_amp; // Just a flag for if we have a normal map or not.
 uniform float shininess;
 
 uniform vec3 light_position; // light position in *viewspace* (ofc. since all our shading calcs are done there)
@@ -54,6 +59,11 @@ void main() {
     }
 
     vec3 interp_surface_normal = normalize(surface_normal);
+    if (normal_amp == -1) {
+        interp_surface_normal = texture(normal_map, texture_coord + normal_map_offset).rgb * 2 - 1;
+        interp_surface_normal = normalize(TBN * interp_surface_normal);
+    }
+
     vec3 light_dir = normalize(light_position - viewspace_position);
     vec3 view_dir = normalize(-viewspace_position);
     vec3 reflection = normalize(reflect(-light_dir, interp_surface_normal));

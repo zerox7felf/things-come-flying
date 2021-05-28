@@ -59,6 +59,12 @@ void camera_update(Engine* engine) {
 		if (key_down[GLFW_KEY_D]) {
 			camera.target_pos = camera.target_pos + camera.right * engine->delta_time * move_speed;
 		}
+		if (key_down[GLFW_KEY_LEFT_SHIFT]) {
+			camera.target_pos = camera.target_pos + camera.up * engine->delta_time * move_speed;
+        }
+		if (key_down[GLFW_KEY_LEFT_CONTROL]) {
+			camera.target_pos = camera.target_pos - camera.up * engine->delta_time * move_speed;
+        }
 	}
 	else {
 		camera.yaw += 2.5f * engine->delta_time;
