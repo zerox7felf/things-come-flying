@@ -55,8 +55,16 @@ void engine_initialize(Engine* engine) {
 		.texture_mix = 0,
 	};
 
+	Entity* sun = engine_push_empty_entity(engine);
+	entity_initialize(sun, V3(0, 0, 0), V3(3, 3, 3), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL);
+	sun->move_speed = 0;
+	Material sun_material = base;
+	sun_material.ambient.value.constant = 1.0f;
+	sun_material.color_map.id= TEXTURE_SUN;
+	entity_attach_material(sun, sun_material);
+
     Entity* plane = engine_push_empty_entity(engine);
-    entity_initialize(plane, V3(35, 0, 15), V3(1, 1, 1), V3(0, 0, 0), ENTITY_NONE, MESH_BENT_PLANE, NULL);
+    entity_initialize(plane, V3(45, 0, 45), V3(0.5f, 0.5f, 0.5f), V3(0, 0, 0), ENTITY_PLANET, MESH_BENT_PLANE, sun);
     Material plane_material = base;
     plane_material.ambient.value.constant = 0.1f;
     plane_material.specular.value.map.id = TEXTURE_SHINGLES_SPECULAR;
@@ -65,14 +73,6 @@ void engine_initialize(Engine* engine) {
     plane_material.normal.type = VALUE_MAP_MAP;
     plane_material.color_map.id = TEXTURE_SHINGLES;
     entity_attach_material(plane, plane_material);
-
-	Entity* sun = engine_push_empty_entity(engine);
-	entity_initialize(sun, V3(0, 0, 0), V3(3, 3, 3), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL);
-	sun->move_speed = 0;
-	Material sun_material = base;
-	sun_material.ambient.value.constant = 1.0f;
-	sun_material.color_map.id= TEXTURE_SUN;
-	entity_attach_material(sun, sun_material);
 
 	Entity* earth = engine_push_empty_entity(engine);
 	entity_initialize(earth, V3(15, 0, 14), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), ENTITY_PLANET, MESH_SPHERE, sun);

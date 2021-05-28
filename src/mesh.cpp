@@ -209,4 +209,6 @@ void unload_mesh(Mesh* mesh) {
 	list_free(mesh->uv_indices, mesh->uv_index_count);
 	list_free(mesh->normals, mesh->normal_count);
 	list_free(mesh->normal_indices, mesh->normal_index_count);
+	list_free(mesh->tangents, mesh->tangent_count);
+	list_free(mesh->bitangents, mesh->bitangent_count);
 }
