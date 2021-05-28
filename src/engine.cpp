@@ -2,19 +2,21 @@
 
 #include <sys/time.h>	// gettimeofday
 
-#include "engine.hpp"
 #include "window.hpp"
 #include "camera.hpp"
+#include "entity.hpp"
 #include "renderer.hpp"
+#include "engine.hpp"
 
 #define MAX_DT 1.0f
 #define TITLE_SIZE 128
 
-Engine engine;
+Engine engine = {};
 
 static void engine_initialize(Engine* engine);
 static i32 engine_run(Engine* engine);
 
+// Entity* entity_initialize(Entity* entity, v3 position, v3 size, v3 rotation, Entity_type type, i32 mesh_id, Entity* parent);
 void engine_initialize(Engine* engine) {
 	engine->is_running = 1;
 	engine->animation_playing = 1;
@@ -23,15 +25,74 @@ void engine_initialize(Engine* engine) {
 	engine->time_scale = 1.0f;
 	engine->mouse_x = 0;
 	engine->mouse_y = 0;
+	engine->scroll_x = 0;
+	engine->scroll_y = 0;
+	engine->entity_count = 0;
+	engine->target_entity_index = 0;
 	camera_initialize(V3(0, 0, -14));
+
+	Material base = (Material) {
+		.ambient = {
+			.value = { .constant = 0.02f, },
+			.type = VALUE_MAP_CONST,
+		},
+		.diffuse = {
+			.value = { .constant = 1.0f, },
+			.type = VALUE_MAP_CONST,
+		},
+		.specular = {
+			.value = { .constant = 1.0f, },
+			.type = VALUE_MAP_CONST,
+		},
+		.shininess = 1.0f,	// NOTE(lucas): Looks a bit strange in lower shininess values
+		.color_map = { .id = TEXTURE_WHITE, },
+		.texture1 = {},
+		.texture_mix = 0,
+	};
+
+	Entity* sun = engine_push_empty_entity(engine);
+	entity_initialize(sun, V3(0, 0, 0), V3(3, 3, 3), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL);
+	sun->move_speed = 0;
+	Material sun_material = base;
+	sun_material.ambient.value.constant = 1.0f;
+	sun_material.color_map.id= TEXTURE_SUN;
+	entity_attach_material(sun, sun_material);
+
+	Entity* earth = engine_push_empty_entity(engine);
+	entity_initialize(earth, V3(15, 0, 14), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), ENTITY_PLANET, MESH_SPHERE, sun);
+	Material earth_material = base;
+	earth_material.ambient.value.map.id = TEXTURE_EARTH_NIGHT;
+	earth_material.ambient.type = VALUE_MAP_MAP;
+	earth_material.specular.value.map.id = TEXTURE_EARTH_SPECULAR;
+	earth_material.specular.type = VALUE_MAP_MAP;
+	earth_material.color_map.id = TEXTURE_EARTH;
+	earth_material.texture1 = { .id = TEXTURE_EARTH_CLOUDS, };	// TODO(lucas): Animate secondary texture in entities
+	earth_material.texture_mix = 1.0f;
+	entity_attach_material(earth, earth_material);
+
+	Entity* moon = engine_push_empty_entity(engine);
+	entity_initialize(moon, V3(2.2f, 0, 2), V3(0.25f, 0.25f, 0.25f), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, earth);
+	moon->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 1.45f;
+	Material moon_material = base;
+	moon_material.color_map.id = TEXTURE_MOON;
+	entity_attach_material(moon, moon_material);
+
+	Entity* alien = engine_push_empty_entity(engine);
+	entity_initialize(alien, V3(35, 0, 30), V3(2, 2, 2), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, sun);
+	alien->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 0.35f;
+	Material alien_material = base;
+	alien_material.ambient.value.map.id = TEXTURE_ALIEN_AMBIENT;
+	alien_material.ambient.type = VALUE_MAP_MAP;
+	alien_material.color_map.id = TEXTURE_ALIEN;
+	entity_attach_material(alien, alien_material);
 }
 
 i32 engine_run(Engine* engine) {
-	float angle = 0.0f;
     float shine = 1.0f;
-	struct timeval now = {0};
-	struct timeval prev = {0};
-	u8 follow_target = 0;
+	struct timeval now = {};
+	struct timeval prev = {};
+	u8 follow_target = 1;
+	Entity* target_entity = NULL;
 	char title_string[TITLE_SIZE] = {0};
     u8 fullbright = 0;
 	while (engine->is_running && window_poll_events() >= 0) {
@@ -53,6 +114,7 @@ i32 engine_run(Engine* engine) {
 		if (key_pressed[GLFW_KEY_F11]) {
 			window_toggle_fullscreen();
 		}
+#if 0 	// NOTE(lucas): Camera zoom has these controls now ;)
         if (key_down[GLFW_KEY_UP]) {
             shine += 0.1;
             printf("Shine: %f\n", shine);
@@ -61,6 +123,7 @@ i32 engine_run(Engine* engine) {
             shine -= 0.1;
             printf("Shine: %f\n", shine);
         }
+#endif
 		if (key_pressed[GLFW_KEY_1]) {
 			if (engine->time_scale < 0.1f) {
 				engine->time_scale *= 0.5f;
@@ -78,9 +141,6 @@ i32 engine_run(Engine* engine) {
 			engine->time_scale = 1;
 			fprintf(stdout, "Reset time scale: %g\n", engine->time_scale);
 		}
-		if (key_pressed[GLFW_KEY_F]) {
-			follow_target = !follow_target;
-		}
 		if (key_pressed[GLFW_KEY_R]) {
 			engine_initialize(engine);
 			continue;
@@ -97,11 +157,43 @@ i32 engine_run(Engine* engine) {
 		if (key_pressed[GLFW_KEY_I]) {
 			camera.interactive_mode = !camera.interactive_mode;
 		}
+		if (follow_target) {
+			if (key_pressed[GLFW_KEY_LEFT]) {
+				if (engine->target_entity_index > 0) {
+					engine->target_entity_index--;
+				}
+				else {
+					engine->target_entity_index = engine->entity_count - 1;
+				}
+			}
+			else if (key_pressed[GLFW_KEY_RIGHT]) {
+				engine->target_entity_index = (engine->target_entity_index + 1) % engine->entity_count;
+			}
+			else if (key_down[GLFW_KEY_UP]) {
+				camera.zoom_target -= 10 * engine->delta_time;
+				camera.zoom_target = clamp(camera.zoom_target, 1.0f, 255.0f);
+			}
+			else if (key_down[GLFW_KEY_DOWN]) {
+				camera.zoom_target += 10 * engine->delta_time;
+				camera.zoom_target = clamp(camera.zoom_target, 1.0f, 255.0f);
+			}
+			target_entity = engine_get_target(engine);
+		}
+		if (key_pressed[GLFW_KEY_F]) {
+			follow_target = !follow_target;
+			if (follow_target) {
+				target_entity = engine_get_target(engine);
+			}
+			else {
+				target_entity = NULL;
+			}
+		}
 
 		renderer_bind_fbo(FBO_COLOR);
 
 		render_skybox(CUBE_MAP_SPACE, 0.7f);
 
+#if 0
 		v3 alien_pos = V3(35 * cos(engine->total_time * 0.85f), 2 * cos(engine->total_time * 0.85f), 35 * sin(engine->total_time * 0.85f));
 		v3 alien_size = V3(1.5f, 1.5f, 1.5f);
 
@@ -113,15 +205,15 @@ i32 engine_run(Engine* engine) {
 
 		v3 guy_pos = moon_pos + V3(1 * cos(2.5f * engine->total_time), 0, 1 * sin(2.5f * engine->total_time));
 		v3 guy_size = moon_size * 0.2f;
-
+#endif
 		if (engine->scroll_y != 0) {
-			camera.zoom_target += 0.1f * engine->scroll_y;
+			camera.zoom_target -= 0.1f * engine->scroll_y;
 			camera.zoom_target = clamp(camera.zoom_target, 1.0f, 255.0f);
 		}
 
-		if (follow_target) {
+		if (follow_target && target_entity) {
 			camera.interpolate = 0;
-			camera.target_pos = earth_pos - camera.forward * camera.zoom;
+			camera.target_pos = target_entity->position - camera.forward * camera.zoom;
 		}
 		else {
 			camera.interpolate = 1;
@@ -131,6 +223,13 @@ i32 engine_run(Engine* engine) {
 		window_get_scroll(&engine->scroll_x, &engine->scroll_y);
 		camera_update(engine);
 
+		for (u32 entity_index = 0; entity_index < engine->entity_count; ++entity_index) {
+			Entity* entity = &engine->entities[entity_index];
+			entity_update(entity, engine);
+			entity_render(entity);
+		}
+
+#if 0
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
             .ambient = {
                 .value = { .constant = fullbright ? 1.0f : 0.05f },
@@ -188,59 +287,34 @@ i32 engine_run(Engine* engine) {
 			.texture1 = {},
 			.texture_mix = 0,
         });
-
-        /*render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(3, 3, 3), MESH_SPHERE, (Material) {
-            .ambient = { .constant = fullbright ? 1.0f : 1.0f },
-            .diffuse = 0.0f,
-            .specular = 0.5f,
-            .shininess = 10.0f,
-            .texture0 = {.id = TEXTURE_SUN},
-			.texture1 = {},
-			.texture_mix = 0,
-        });
-
-		render_mesh(moon_pos, V3(0, 0, 0), moon_size, MESH_SPHERE, (Material) {
-            .ambient = { .constant = fullbright ? 1.0f : 0.01f },
-            .diffuse = 1.0f,
-            .specular = 0.5f,
-            .shininess = 10.0f,
-			.texture0 = {.id = TEXTURE_MOON},
-			.texture1 = {},
-			.texture_mix = 0,
-        });
-
-		render_mesh(guy_pos, V3(angle * 2, angle * 1.2f, -angle), guy_size, MESH_GUY, (Material) {
-            .ambient = { .constant = fullbright ? 1.0f : 0.02f },
-            .diffuse = 1.0f,
-            .specular = 0.5f,
-            .shininess = 1.0f,
-            .texture0 = {.id = TEXTURE_GUY},
-			.texture1 = {},
-			.texture_mix = 0,
-        });
-
-        render_mesh(V3(20.0f, 6.0f, 20.0f), V3(angle * 6, angle * 3.6f, angle * -2.0f), V3(1.0f, 1.0f, 1.0f), MESH_CUBE, (Material) {
-            .ambient = { .constant = fullbright ? 1.0f : 0.1f },
-            .diffuse = 1.0f,
-            .specular = 0.5f,
-            .shininess = 10.0f,
-            .texture0 = {.id = TEXTURE_MOON},
-			.texture1 = {},
-			.texture_mix = 0,
-        });*/
-
-		angle = 10 * engine->total_time;
+#endif
 
 		snprintf(title_string, TITLE_SIZE, "Solar System | %i fps | %g delta", (i32)(1.0f / engine->delta_time), engine->delta_time);
 
 		window_set_title(title_string);
 
 		renderer_post_process();
-
 		window_swap_buffers();
 		renderer_clear_fbos();
 	}
 	return NoError;
+}
+
+Entity* engine_push_empty_entity(Engine* engine) {
+	Entity* e = NULL;
+	if (engine->entity_count < MAX_ENTITY) {
+		e = &engine->entities[engine->entity_count++];
+		memset(e, 0, sizeof(Entity));
+		return e;
+	}
+	return NULL;
+}
+
+Entity* engine_get_target(Engine* engine) {
+	if (engine->target_entity_index < engine->entity_count) {
+		return &engine->entities[engine->target_entity_index];
+	}
+	return NULL;
 }
 
 i32 engine_start() {

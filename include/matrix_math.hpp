@@ -140,7 +140,7 @@ inline __m128 linear_combine(__m128 a, mat4 b);
 inline mat4 transpose(mat4 a);
 
 inline mat4 mat4d(float diagonal) {
-	mat4 result = {0};
+	mat4 result = {};
 
 	result.elements[0][0] = diagonal;
 	result.elements[1][1] = diagonal;
@@ -198,7 +198,7 @@ inline mat4 translate_mat4(mat4 m, v3 t) {
 }
 
 inline mat4 multiply_mat4(mat4 a, mat4 b) {
-	mat4 result = {0};
+	mat4 result = {};
 
 #if USE_SSE
 	mat4 left = transpose(a);
@@ -312,7 +312,7 @@ inline v3 diff_v3(v3 a, v3 b) {
 }
 
 inline v3 normalize(v3 a) {
-	v3 result = {0};
+	v3 result = {};
 	float length = length_v3(a);
 
 	if (length != 0.0f) { 	// To be sure that we don't get a math error (divide by 0)
@@ -324,7 +324,7 @@ inline v3 normalize(v3 a) {
 }
 
 inline v3 cross_product(v3 a, v3 b) {
-	v3 result = {0};
+	v3 result = {};
 
 	result.x = (a.y * b.z) - (a.z * b.y);
 	result.y = (a.z * b.x) - (a.x * b.z);
@@ -338,7 +338,7 @@ inline float to_radians(float angle) {
 }
 
 mat4 perspective(float fov, float aspect, float z_near, float z_far) {
-	mat4 result = {0};
+	mat4 result = {};
 
 	float tan_theta_over2 = tanf(fov * (PI32 / 360.0f));
 
@@ -353,7 +353,7 @@ mat4 perspective(float fov, float aspect, float z_near, float z_far) {
 }
 
 inline mat4 orthographic(float left, float right, float bottom, float top, float z_near, float z_far) {
-	mat4 result = {0};
+	mat4 result = {};
 
 	result.elements[0][0] = 2.0f / (right - left);
 	result.elements[1][1] = 2.0f / (top - bottom);

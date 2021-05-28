@@ -21,7 +21,7 @@ mat4 ortho_projection;
 mat4 view;
 mat4 model;
 
-Render_state render_state = {0};
+Render_state render_state = {};
 
 u32 diffuse_shader = 0,
 	skybox_shader = 0,
@@ -118,7 +118,7 @@ i32 shader_compile_from_source(const char* vert_source, const char* frag_source,
 	i32 result = NoError;
 	i32 compile_report = 0;
 	u32 program = 0;
-	char err_log[SHADER_ERROR_BUFFER_SIZE] = {0};
+	char err_log[SHADER_ERROR_BUFFER_SIZE] = {};
 	u32 vert_shader = 0, frag_shader = 0;
 
 	// Create and compile vertex shader
@@ -176,8 +176,8 @@ done:
 i32 shader_compile_from_file(const char* path, u32* program_out) {
 	i32 result = NoError;
 
-	Buffer vert_source = {0};
-	Buffer frag_source = {0};
+	Buffer vert_source = {};
+	Buffer frag_source = {};
 	char vert_path[MAX_PATH_SIZE] = {0};
 	char frag_path[MAX_PATH_SIZE] = {0};
 	snprintf(vert_path, MAX_PATH_SIZE, "%s.vert", path);
@@ -570,12 +570,14 @@ void renderer_post_process() {
 	if (!renderer->use_post_processing) {
 		render_fbo(FBO_COLOR, FBO_STANDARD_FRAMEBUFFER, (Fbo_attributes) {
 			.shader_id = texture_shader,
+			{},
 		});
 		return;
 	}
 
 	render_fbo(FBO_COLOR, FBO_BRIGHTNESS_EXTRACT, (Fbo_attributes) {
 		.shader_id = texture_shader,
+		{},
 	});
 
 	render_fbo(FBO_BRIGHTNESS_EXTRACT, FBO_V_BLUR, (Fbo_attributes) {
@@ -630,7 +632,10 @@ void renderer_clear_fbos() {
 	renderer_clear_fbo();	// Clear the normal framebuffer
 }
 
-void render_mesh(v3 position, v3 rotation, v3 size, u32 mesh_id, Material material) {
+void render_mesh(v3 position, v3 rotation, v3 size, i32 mesh_id, Material material) {
+	if (mesh_id < 0 || mesh_id >= MAX_MESH) {
+		return;
+	}
 	Render_state* renderer = &render_state;
 	u32 texture1 = renderer->textures[material.texture1.id];
 

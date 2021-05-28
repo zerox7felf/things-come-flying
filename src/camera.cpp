@@ -11,7 +11,7 @@ static double mouse_sensitivity = 0.05;
 static double move_speed = 24;
 static float move_interpolation_speed = 5;
 
-#define camera_zoom_default 1.5f
+#define camera_zoom_default 6.0f	// Zoom-out factor
 #define camera_zoom_interpolation_speed 10.0f
 
 Camera camera;
@@ -30,7 +30,7 @@ void camera_initialize(v3 pos) {
 	camera.yaw = 90.0f;
 	camera.zoom = camera.zoom_target = camera_zoom_default;
 	camera.interpolate = 1;
-	camera.interactive_mode = 1;
+	camera.interactive_mode = 0;
 }
 
 void camera_update(Engine* engine) {
@@ -46,6 +46,19 @@ void camera_update(Engine* engine) {
 	if (camera.interactive_mode) {
 		camera.yaw += delta_x;
 		camera.pitch += delta_y;
+
+		if (key_down[GLFW_KEY_W]) {
+			camera.target_pos = camera.target_pos + camera.forward * engine->delta_time * move_speed;
+		}
+		if (key_down[GLFW_KEY_S]) {
+			camera.target_pos = camera.target_pos - camera.forward * engine->delta_time * move_speed;
+		}
+		if (key_down[GLFW_KEY_A]) {
+			camera.target_pos = camera.target_pos - camera.right * engine->delta_time * move_speed;
+		}
+		if (key_down[GLFW_KEY_D]) {
+			camera.target_pos = camera.target_pos + camera.right * engine->delta_time * move_speed;
+		}
 	}
 	else {
 		camera.yaw += 2.5f * engine->delta_time;
@@ -63,19 +76,6 @@ void camera_update(Engine* engine) {
 		sin(to_radians(camera.pitch)),
 		sin(to_radians(camera.yaw)) * cos(to_radians(camera.pitch))
 	);
-
-	if (key_down[GLFW_KEY_W]) {
-		camera.target_pos = camera.target_pos + camera.forward * engine->delta_time * move_speed;
-	}
-	if (key_down[GLFW_KEY_S]) {
-		camera.target_pos = camera.target_pos - camera.forward * engine->delta_time * move_speed;
-	}
-	if (key_down[GLFW_KEY_A]) {
-		camera.target_pos = camera.target_pos - camera.right * engine->delta_time * move_speed;
-	}
-	if (key_down[GLFW_KEY_D]) {
-		camera.target_pos = camera.target_pos + camera.right * engine->delta_time * move_speed;
-	}
 
 	if (camera.interpolate) {
 		camera.pos = lerp(camera.pos, camera.target_pos, move_interpolation_speed * engine->delta_time);

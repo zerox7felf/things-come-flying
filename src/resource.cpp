@@ -9,6 +9,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/earth_clouds.png",
 	"resource/texture/earth_ambient.png",
 	"resource/texture/earth_specular.png",
+	"resource/texture/earth_nightmap.png",
 	"resource/texture/sun.png",
 	"resource/texture/alien.png",
 	"resource/texture/alien_ambient.png",
@@ -16,6 +17,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/moon.png",
 	"resource/texture/monster.png",
 	"resource/texture/green.png",
+	"resource/texture/white.png",
 };
 
 const char* skybox_path[MAX_SKYBOX] = {
