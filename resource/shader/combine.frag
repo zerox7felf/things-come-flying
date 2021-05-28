@@ -16,5 +16,8 @@ void main() {
 	color = texture(texture1, texture_coord) + (mix * texture(texture0, texture_coord));
 	// color = texture(texture0, texture_coord);
 
+	// float gamma = 2.2;
+	// color.rgb = pow(color.rgb, vec3(1.0 / gamma));
+
 	out_color = color;
 }
