@@ -29,7 +29,7 @@ void framebuffer_callback(GLFWwindow* window, i32 width, i32 height) {
 	win.width = width;
 	win.height = height;
 	projection = perspective(
-		90, // fov
+		65, // fov
 		(float)width / height,	// aspect ratio
 		0.02f,	// z near clipping
 		2000.0f // z far clipping

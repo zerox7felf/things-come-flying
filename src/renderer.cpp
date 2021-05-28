@@ -320,12 +320,16 @@ void store_attribute(Model* model, i32 attribute_index, u32 count, u32 size, voi
 void fbos_initialize(Render_state* renderer, i32 width, i32 height) {
 	for (i32 i = 0; i < MAX_FBO; ++i) {
 		Fbo* fbo = &renderer->fbos[i];
+#if 1
 		if (i == FBO_H_BLUR || i == FBO_V_BLUR || i == FBO_BRIGHTNESS_EXTRACT) {
 			fbo_initialize(fbo, width, height, GL_LINEAR);
 		}
 		else {
 			fbo_initialize(fbo, width, height, GL_NEAREST);
 		}
+#else
+		fbo_initialize(fbo, width, height, GL_NEAREST);
+#endif
 		renderer->fbo_count++;
 	}
 }
@@ -579,7 +583,6 @@ void renderer_post_process() {
 
 	render_fbo(FBO_COLOR, FBO_BRIGHTNESS_EXTRACT, (Fbo_attributes) {
 		.shader_id = texture_shader,
-		{},
 	});
 
 	render_fbo(FBO_BRIGHTNESS_EXTRACT, FBO_V_BLUR, (Fbo_attributes) {
@@ -587,6 +590,7 @@ void renderer_post_process() {
 		{
 			.extract = {
 				.factor = 1,
+				.keep_color = 0,
 			},
 		}
 	});
@@ -614,7 +618,7 @@ void renderer_post_process() {
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
-				.mix = 0.23f,
+				.mix = 0.3f,
 			},
 		}
 	});

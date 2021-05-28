@@ -16,13 +16,13 @@ void main() {
 	vec4 color = vec4(0);
 	vec2 texel_size = 1.0 / textureSize(texture0, 0);
 	if (vertical) {
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < 9; i++) {
 			color += weights[i] * texture(texture0, texture_coord + vec2(0, texel_size.x * i));
 			color += weights[i] * texture(texture0, texture_coord - vec2(0, texel_size.x * i));
 		}
 	}
 	else {
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < 9; i++) {
 			color += weights[i] * texture(texture0, texture_coord + vec2(texel_size.y * i, 0));
 			color += weights[i] * texture(texture0, texture_coord - vec2(texel_size.y * i, 0));
 		}

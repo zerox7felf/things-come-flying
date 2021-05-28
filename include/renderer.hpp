@@ -80,6 +80,7 @@ typedef struct Fbo_attributes {
 		} blur;
 		struct {
 			float factor;
+			u8 keep_color;
 		} extract;
 	};
 } Fbo_attributes;

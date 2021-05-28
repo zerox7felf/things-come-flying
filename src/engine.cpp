@@ -56,10 +56,10 @@ void engine_initialize(Engine* engine) {
 	};
 
 	Entity* sun = engine_push_empty_entity(engine);
-	entity_initialize(sun, V3(0, 0, 0), V3(3, 3, 3), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL);
+	entity_initialize(sun, V3(0, 0, 0), V3(4, 4, 4), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL);
 	sun->move_speed = 0;
 	Material sun_material = base;
-	sun_material.ambient.value.constant = 1.0f;
+	sun_material.ambient.value.constant = 1.1f;
 	sun_material.color_map.id= TEXTURE_SUN;
 	entity_attach_material(sun, sun_material);
 
@@ -207,21 +207,14 @@ i32 engine_run(Engine* engine) {
 
 		renderer_bind_fbo(FBO_COLOR);
 
-		render_skybox(CUBE_MAP_SPACE, 0.7f);
+		render_skybox(CUBE_MAP_SPACE, 0.6f);
 
-#if 0
-		v3 alien_pos = V3(35 * cos(engine->total_time * 0.85f), 2 * cos(engine->total_time * 0.85f), 35 * sin(engine->total_time * 0.85f));
-		v3 alien_size = V3(1.5f, 1.5f, 1.5f);
+		for (u32 entity_index = 0; entity_index < engine->entity_count; ++entity_index) {
+			Entity* entity = &engine->entities[entity_index];
+			entity_update(entity, engine);
+			entity_render(entity);
+		}
 
-		v3 earth_pos = V3(20 * cos(engine->total_time), 0, 20 * sin(engine->total_time));
-		v3 earth_size = alien_size * 0.5f;
-
-		v3 moon_pos = earth_pos + V3(4 * cos(1.2f * engine->total_time), 0, 4 * sin(1.2f * engine->total_time));
-		v3 moon_size = earth_size * 0.5f;
-
-		v3 guy_pos = moon_pos + V3(1 * cos(2.5f * engine->total_time), 0, 1 * sin(2.5f * engine->total_time));
-		v3 guy_size = moon_size * 0.2f;
-#endif
 		if (engine->scroll_y != 0) {
 			camera.zoom_target -= 0.1f * engine->scroll_y;
 			camera.zoom_target = clamp(camera.zoom_target, 1.0f, 255.0f);
@@ -239,74 +232,7 @@ i32 engine_run(Engine* engine) {
 		window_get_scroll(&engine->scroll_x, &engine->scroll_y);
 		camera_update(engine);
 
-		for (u32 entity_index = 0; entity_index < engine->entity_count; ++entity_index) {
-			Entity* entity = &engine->entities[entity_index];
-			entity_update(entity, engine);
-			entity_render(entity);
-		}
-
-#if 0
-        render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
-            .ambient = {
-                .value = { .constant = fullbright ? 1.0f : 0.05f },
-                //.value = { .map = { .id = TEXTURE_EARTH_AMBIENT } },
-                .type = VALUE_MAP_CONST,
-            },
-            .diffuse = {
-                .value = { .constant = 1.0f },
-                .type = VALUE_MAP_CONST
-            },
-            .specular = {
-                .value = { .map = { .id = TEXTURE_EARTH_SPECULAR } },
-                .type = VALUE_MAP_MAP
-            },
-            .shininess = shine,
-            .color_map = {.id = TEXTURE_EARTH},
-			.texture1 = {.id = TEXTURE_EARTH_CLOUDS, .offset = V2(-0.05f * engine->total_time, 0)},
-			.texture_mix = 1.0f,
-        });
-
-		render_mesh(alien_pos, V3(-25, angle * 1.25f, 0), alien_size, MESH_SPHERE, (Material) {
-            .ambient = {
-                .value = { .map = { .id = TEXTURE_ALIEN_AMBIENT } },
-                .type = VALUE_MAP_MAP
-            },
-            .diffuse = {
-                .value = { .constant = 1.0f },
-                .type = VALUE_MAP_CONST
-            },
-            .specular = {
-                .value = { .constant = 0.5f },
-                .type = VALUE_MAP_CONST
-            },
-            .shininess = 10.0f,
-            .color_map = {.id = TEXTURE_ALIEN},
-			.texture1 = {},
-			.texture_mix = 0,
-        });
-
-		render_mesh(V3(0, 0, 0), V3(0, angle, 0), V3(4, 4, 4), MESH_SPHERE, (Material) {
-            .ambient = {
-                .value = { .constant = 1.0f },
-                .type = VALUE_MAP_CONST
-            },
-            .diffuse = {
-                .value = { .constant = 1.0f },
-                .type = VALUE_MAP_CONST
-            },
-            .specular = {
-                .value = { .constant = 0.5f },
-                .type = VALUE_MAP_CONST
-            },
-            .shininess = 10.0f,
-            .color_map = {.id = TEXTURE_SUN},
-			.texture1 = {},
-			.texture_mix = 0,
-        });
-#endif
-
 		snprintf(title_string, TITLE_SIZE, "Solar System | %i fps | %g delta", (i32)(1.0f / engine->delta_time), engine->delta_time);
-
 		window_set_title(title_string);
 
 		renderer_post_process();

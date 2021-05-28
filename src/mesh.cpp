@@ -34,10 +34,10 @@ void mesh_initialize(Mesh* mesh) {
 	mesh->normal_count = 0;
 	mesh->normal_indices = NULL;
 	mesh->normal_index_count = 0;
-    mesh->tangents = NULL;
-    mesh->tangent_count = 0;
-    mesh->bitangents = NULL;
-    mesh->bitangent_count = 0;
+	mesh->tangents = NULL;
+	mesh->tangent_count = 0;
+	mesh->bitangents = NULL;
+	mesh->bitangent_count = 0;
 #endif
 }
 
@@ -77,14 +77,15 @@ i32 mesh_sort_indices(Mesh* mesh) {
                 normals[index] = current_normal;
                 //normal_flags[index] = 1;
             }
-        } else {
-            // Set vertex attributes
-            uv[index] = current_uv;
-            uv_flags[index] = 1;
-
-            normals[index] = current_normal;
-            normal_flags[index] = 1;
         }
+		else {
+			// Set vertex attributes
+			uv[index] = current_uv;
+			uv_flags[index] = 1;
+
+			normals[index] = current_normal;
+			normal_flags[index] = 1;
+		}
 	}
 
 	list_free(mesh->uv, mesh->uv_count);
@@ -104,11 +105,10 @@ i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
 	if (read_file(path, &buffer) != NoError) {
 		return Error;
 	}
-	char line[MAX_LINE_SIZE] = {0};	// Current line we are reading
+	char line[MAX_LINE_SIZE] = {};	// Current line we are reading
 	char* iterator = &buffer.data[0];	// Iterator pointing at the beginning of the obj data file
 	i32 scan_status = 0;	// Scan status to recognize when we can not read the file anymore (i.e. end of file)
 
-	// printf("Parsing object file: %s, size: %i\n", path, buffer.size);
 	while (1) {
 		safe_scanf(scan_status, iterator, "%s", line);
 		if (scan_status == EOF) {
@@ -173,7 +173,10 @@ i32 load_mesh(const char* path, Mesh* mesh, u8 sort_mesh) {
             v2 d_uv2 = uv3 - uv1;
 
             float d = d_uv1.x * d_uv2.y - d_uv1.y * d_uv2.x;
-            float fraction = 1.0f / d;
+            float fraction = 1.0f;
+			if (d != 0) {
+				fraction /= d;
+			}
             v3 tangent = V3(
                 fraction * (d_uv2.y * e1.x - d_uv1.y * e2.x),
                 fraction * (d_uv2.y * e1.y - d_uv1.y * e2.y),
