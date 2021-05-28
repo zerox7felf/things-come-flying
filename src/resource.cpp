@@ -18,6 +18,9 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/shingles_diffuse.png",
 	"resource/texture/shingles_specular.png",
 	"resource/texture/shingles_normal.png",
+	"resource/texture/house_diffuse.png",
+	"resource/texture/house_specular.png",
+	"resource/texture/house_normal.png",
 	"resource/texture/monster.png",
 	"resource/texture/green.png",
 	"resource/texture/white.png",
@@ -37,7 +40,8 @@ const char* mesh_path[MAX_MESH] = {
 	"resource/mesh/cube.obj",
 	"resource/mesh/monster.obj",
     "resource/mesh/monke.obj",
-    "resource/mesh/bent_plane.obj"
+    "resource/mesh/bent_plane.obj",
+    "resource/mesh/house.obj"
 };
 
 void resources_initialize(Resources* resources) {

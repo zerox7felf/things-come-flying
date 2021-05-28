@@ -63,17 +63,6 @@ void engine_initialize(Engine* engine) {
 	sun_material.color_map.id= TEXTURE_SUN;
 	entity_attach_material(sun, sun_material);
 
-    Entity* plane = engine_push_empty_entity(engine);
-    entity_initialize(plane, V3(45, 0, 45), V3(0.5f, 0.5f, 0.5f), V3(0, 0, 0), ENTITY_PLANET, MESH_BENT_PLANE, sun);
-    Material plane_material = base;
-    plane_material.ambient.value.constant = 0.1f;
-    plane_material.specular.value.map.id = TEXTURE_SHINGLES_SPECULAR;
-    plane_material.specular.type = VALUE_MAP_MAP;
-    plane_material.normal.value.map.id = TEXTURE_SHINGLES_NORMAL;
-    plane_material.normal.type = VALUE_MAP_MAP;
-    plane_material.color_map.id = TEXTURE_SHINGLES;
-    entity_attach_material(plane, plane_material);
-
 	Entity* earth = engine_push_empty_entity(engine);
 	entity_initialize(earth, V3(15, 0, 14), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), ENTITY_PLANET, MESH_SPHERE, sun);
 	Material earth_material = base;
@@ -85,6 +74,18 @@ void engine_initialize(Engine* engine) {
 	earth_material.texture1 = { .id = TEXTURE_EARTH_CLOUDS, };	// TODO(lucas): Animate secondary texture in entities
 	earth_material.texture_mix = 1.0f;
 	entity_attach_material(earth, earth_material);
+
+    // TODO: position parented entities in their parents coordinate system
+    Entity* house = engine_push_empty_entity(engine);
+    entity_initialize(house, V3(0, 0.8f, 0), V3(0.1f, 0.1f, 0.1f), V3(0, 0, 0), ENTITY_PLANET, MESH_HOUSE, earth);
+    Material house_material = base;
+    house_material.ambient.value.constant = 0.1f;
+    house_material.specular.value.map.id = TEXTURE_HOUSE_SPECULAR;
+    house_material.specular.type = VALUE_MAP_MAP;
+    house_material.normal.value.map.id = TEXTURE_HOUSE_NORMAL;
+    house_material.normal.type = VALUE_MAP_MAP;
+    house_material.color_map.id = TEXTURE_HOUSE;
+    entity_attach_material(house, house_material);
 
 	Entity* moon = engine_push_empty_entity(engine);
 	entity_initialize(moon, V3(2.2f, 0, 2), V3(0.25f, 0.25f, 0.25f), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, earth);
