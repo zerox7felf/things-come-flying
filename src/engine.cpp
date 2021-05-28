@@ -94,6 +94,9 @@ i32 engine_run(Engine* engine) {
         if (key_pressed[GLFW_KEY_P]) {
 			renderer_toggle_post_processing();
         }
+		if (key_pressed[GLFW_KEY_I]) {
+			camera.interactive_mode = !camera.interactive_mode;
+		}
 
 		renderer_bind_fbo(FBO_COLOR);
 
@@ -124,9 +127,9 @@ i32 engine_run(Engine* engine) {
 			camera.interpolate = 1;
 		}
 
-		camera_update();
 		window_get_cursor(&engine->mouse_x, &engine->mouse_y);
 		window_get_scroll(&engine->scroll_x, &engine->scroll_y);
+		camera_update(engine);
 
         render_mesh(earth_pos, V3(20, angle, 0), earth_size, MESH_SPHERE, (Material) {
             .ambient = {

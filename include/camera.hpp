@@ -14,12 +14,13 @@ typedef struct Camera {
 	float zoom;
 	float zoom_target;
 	u8 interpolate;
+	u8 interactive_mode;
 } Camera;
 
 extern Camera camera;
 
 void camera_initialize(v3 pos);
 
-void camera_update();
+void camera_update(struct Engine* engine);
 
 #endif

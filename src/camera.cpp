@@ -30,20 +30,26 @@ void camera_initialize(v3 pos) {
 	camera.yaw = 90.0f;
 	camera.zoom = camera.zoom_target = camera_zoom_default;
 	camera.interpolate = 1;
+	camera.interactive_mode = 1;
 }
 
-void camera_update() {
-	delta_x = engine.mouse_x - last_x;
-	delta_y = last_y - engine.mouse_y;
+void camera_update(Engine* engine) {
+	delta_x = engine->mouse_x - last_x;
+	delta_y = last_y - engine->mouse_y;
 
-	last_x = engine.mouse_x;
-	last_y = engine.mouse_y;
+	last_x = engine->mouse_x;
+	last_y = engine->mouse_y;
 
 	delta_x *= mouse_sensitivity;
 	delta_y *= mouse_sensitivity;
 
-	camera.yaw += delta_x;
-	camera.pitch += delta_y;
+	if (camera.interactive_mode) {
+		camera.yaw += delta_x;
+		camera.pitch += delta_y;
+	}
+	else {
+		camera.yaw += 2.5f * engine->delta_time;
+	}
 
 	if (camera.pitch >= 89.0f) {
 		camera.pitch = 89.0f;
@@ -59,26 +65,26 @@ void camera_update() {
 	);
 
 	if (key_down[GLFW_KEY_W]) {
-		camera.target_pos = camera.target_pos + camera.forward * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos + camera.forward * engine->delta_time * move_speed;
 	}
 	if (key_down[GLFW_KEY_S]) {
-		camera.target_pos = camera.target_pos - camera.forward * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos - camera.forward * engine->delta_time * move_speed;
 	}
 	if (key_down[GLFW_KEY_A]) {
-		camera.target_pos = camera.target_pos - camera.right * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos - camera.right * engine->delta_time * move_speed;
 	}
 	if (key_down[GLFW_KEY_D]) {
-		camera.target_pos = camera.target_pos + camera.right * engine.delta_time * move_speed;
+		camera.target_pos = camera.target_pos + camera.right * engine->delta_time * move_speed;
 	}
 
 	if (camera.interpolate) {
-		camera.pos = lerp(camera.pos, camera.target_pos, move_interpolation_speed * engine.delta_time);
+		camera.pos = lerp(camera.pos, camera.target_pos, move_interpolation_speed * engine->delta_time);
 	}
 	else {
 		camera.pos = camera.target_pos;
 	}
 
-	camera.zoom = lerp(camera.zoom, camera.zoom_target, camera_zoom_interpolation_speed * engine.delta_time);
+	camera.zoom = lerp(camera.zoom, camera.zoom_target, camera_zoom_interpolation_speed * engine->delta_time);
 
 	camera.forward = normalize(camera_dir);
 	camera.right = normalize(cross_product(camera.forward, V3(0.0f, 1.0f, 0.0f)));
