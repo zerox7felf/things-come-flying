@@ -56,7 +56,7 @@ void engine_initialize(Engine* engine) {
 	};
 
 	Entity* sun = engine_push_empty_entity(engine);
-	entity_initialize(sun, V3(0, 0, 0), V3(4, 4, 4), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL);
+	entity_initialize(sun, V3(0, 0, 0), V3(4, 4, 4), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, NULL);
 	sun->move_speed = 0;
 	Material sun_material = base;
 	sun_material.ambient.value.constant = 1.1f;
@@ -64,7 +64,7 @@ void engine_initialize(Engine* engine) {
 	entity_attach_material(sun, sun_material);
 
 	Entity* earth = engine_push_empty_entity(engine);
-	entity_initialize(earth, V3(15, 0, 14), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), ENTITY_PLANET, MESH_SPHERE, sun);
+	entity_initialize(earth, V3(15, 0, 14), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, sun);
 	Material earth_material = base;
 	earth_material.ambient.value.map.id = TEXTURE_EARTH_NIGHT;
 	earth_material.ambient.type = VALUE_MAP_MAP;
@@ -77,7 +77,7 @@ void engine_initialize(Engine* engine) {
 
     // TODO: position parented entities in their parents coordinate system
     Entity* house = engine_push_empty_entity(engine);
-    entity_initialize(house, V3(0, 0.8f, 0), V3(0.1f, 0.1f, 0.1f), V3(0, 0, 0), ENTITY_PLANET, MESH_HOUSE, earth);
+    entity_initialize(house, V3(0, 1.05f, 0), V3(.1f,.1f,.1f), V3(0, 0, -75), V3(0, -1.05f, 0), ENTITY_NONE, MESH_HOUSE, earth, NULL);
     Material house_material = base;
     house_material.ambient.value.constant = 0.1f;
     house_material.specular.value.map.id = TEXTURE_HOUSE_SPECULAR;
@@ -88,14 +88,14 @@ void engine_initialize(Engine* engine) {
     entity_attach_material(house, house_material);
 
 	Entity* moon = engine_push_empty_entity(engine);
-	entity_initialize(moon, V3(2.2f, 0, 2), V3(0.25f, 0.25f, 0.25f), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, earth);
+	entity_initialize(moon, V3(2.2f, 0, 2), V3(0.25f, 0.25f, 0.25f), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, earth);
 	moon->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 1.45f;
 	Material moon_material = base;
 	moon_material.color_map.id = TEXTURE_MOON;
 	entity_attach_material(moon, moon_material);
 
 	Entity* alien = engine_push_empty_entity(engine);
-	entity_initialize(alien, V3(35, 0, 30), V3(2, 2, 2), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, sun);
+	entity_initialize(alien, V3(35, 0, 30), V3(2, 2, 2), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, sun);
 	alien->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 0.35f;
 	Material alien_material = base;
 	alien_material.ambient.value.map.id = TEXTURE_ALIEN_AMBIENT;
@@ -105,7 +105,6 @@ void engine_initialize(Engine* engine) {
 }
 
 i32 engine_run(Engine* engine) {
-    float shine = 1.0f;
 	struct timeval now = {};
 	struct timeval prev = {};
 	u8 follow_target = 1;
@@ -131,16 +130,6 @@ i32 engine_run(Engine* engine) {
 		if (key_pressed[GLFW_KEY_F11]) {
 			window_toggle_fullscreen();
 		}
-#if 0 	// NOTE(lucas): Camera zoom has these controls now ;)
-        if (key_down[GLFW_KEY_UP]) {
-            shine += 0.1;
-            printf("Shine: %f\n", shine);
-        }
-        if (key_down[GLFW_KEY_DOWN]) {
-            shine -= 0.1;
-            printf("Shine: %f\n", shine);
-        }
-#endif
 		if (key_pressed[GLFW_KEY_1]) {
 			if (engine->time_scale < 0.1f) {
 				engine->time_scale *= 0.5f;

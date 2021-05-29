@@ -19,18 +19,23 @@ typedef struct Entity {
 	v3 relative_pos;
 	v3 size;
 	v3 rotation;
+    v3 rotation_pivot;
 	Entity_type type;
 	float move_speed;
 	float angular_speed;
 	i32 mesh_id;
-	struct Entity* parent;
+	struct Entity* parent;      // Adopt parent origin and coordinate system
+	struct Entity* following;   // Simply follow
+    // NOTE(linus): are the two fields above fine or do we want another solution (eg. per-property parenting or smthn)?
 
 	Material material;
 } Entity;
 
-Entity* entity_initialize(Entity* entity, v3 position, v3 size, v3 rotation, Entity_type type, i32 mesh_id, Entity* parent);
+Entity* entity_initialize(Entity* entity, v3 position, v3 size, v3 rotation, v3 rotation_pivot, Entity_type type, i32 mesh_id, Entity* parent, Entity* following);
 
 void entity_attach_material(Entity* entity, Material material);
+
+mat4 entity_get_transform(Entity* entity);
 
 void entity_update(Entity* entity, struct Engine* engine);
 
