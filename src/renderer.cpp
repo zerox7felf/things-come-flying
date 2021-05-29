@@ -638,7 +638,6 @@ void renderer_clear_fbos() {
 	renderer_clear_fbo();	// Clear the normal framebuffer
 }
 
-//void render_mesh(v3 position, v3 rotation, v3 size, i32 mesh_id, Material material) {
 void render_mesh(mat4 translation, i32 mesh_id, Material material) {
 	if (mesh_id < 0 || mesh_id >= MAX_MESH) {
 		return;

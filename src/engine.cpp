@@ -75,7 +75,6 @@ void engine_initialize(Engine* engine) {
 	earth_material.texture_mix = 1.0f;
 	entity_attach_material(earth, earth_material);
 
-    // TODO: position parented entities in their parents coordinate system
     Entity* house = engine_push_empty_entity(engine);
     entity_initialize(house, V3(0, 1.05f, 0), V3(.1f,.1f,.1f), V3(0, 0, -75), V3(0, -1.05f, 0), ENTITY_NONE, MESH_HOUSE, earth, NULL);
     Material house_material = base;

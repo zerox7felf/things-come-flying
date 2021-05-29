@@ -122,7 +122,6 @@ void renderer_toggle_post_processing();
 
 void renderer_clear_fbos();
 
-//void render_mesh(v3 position, v3 rotation, v3 size, i32 mesh_id, Material material);
 void render_mesh(mat4 translation, i32 mesh_id, Material material);
 
 void render_skybox(u32 skybox_id, float brightness);

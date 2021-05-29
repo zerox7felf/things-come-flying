@@ -79,7 +79,6 @@ void entity_update(Entity* entity, Engine* engine) {
 
 void entity_render(Entity* entity) {
 	if (entity->mesh_id >= 0) {
-		//render_mesh(entity->position, entity->rotation, entity->size, entity->mesh_id, entity->material);
 		render_mesh(entity_get_transform(entity), entity->mesh_id, entity->material);
 	}
 }
