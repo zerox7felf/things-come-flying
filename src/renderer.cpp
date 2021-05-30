@@ -352,11 +352,11 @@ void fbo_initialize(Fbo* fbo, i32 width, i32 height, i32 filter_method) {
 	glGenTextures(1, &fbo->texture);
 	glBindTexture(GL_TEXTURE_2D, fbo->texture);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter_method);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter_method);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	// TODO: Other wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glGenTextures(1, &fbo->depth);
 	glBindTexture(GL_TEXTURE_2D, fbo->depth);
@@ -403,7 +403,7 @@ void opengl_initialize(Render_state* renderer) {
 	glEnable(GL_TEXTURE_GEN_R);
 	glEnable(GL_TEXTURE_GEN_T);
 	glEnable(GL_TEXTURE_CUBE_MAP_EXT);
-	// glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	renderer->depth_func = GL_LESS;
 	glDepthFunc(renderer->depth_func);
@@ -589,7 +589,7 @@ void renderer_post_process() {
 		.shader_id = brightness_extract_shader,
 		{
 			.extract = {
-				.factor = 1,
+				.factor = 0.3f,
 				.keep_color = 0,
 			},
 		}
