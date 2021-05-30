@@ -638,7 +638,7 @@ void renderer_clear_fbos() {
 	renderer_clear_fbo();	// Clear the normal framebuffer
 }
 
-void render_mesh(mat4 translation, i32 mesh_id, Material material) {
+void render_mesh(mat4 transformation, i32 mesh_id, Material material) {
 	if (mesh_id < 0 || mesh_id >= MAX_MESH) {
 		return;
 	}
@@ -660,7 +660,7 @@ void render_mesh(mat4 translation, i32 mesh_id, Material material) {
 	model = multiply_mat4(model, rotate(rotation.z, V3(0.0f, 0.0f, 1.0f)));
 	model = multiply_mat4(model, rotate(rotation.x, V3(1.0f, 0.0f, 0.0f)));
 	model = multiply_mat4(model, scale_mat4(size));*/
-    model = translation;
+    model = transformation;
 
     mat4 VM = multiply_mat4(view, model);
     mat4 PVM = multiply_mat4(projection, VM);
