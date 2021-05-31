@@ -14,7 +14,7 @@ uniform bool keep_color;
 void main() {
 	vec4 color = texture(texture0, texture_coord);
 	float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-	if (keep_color) {
+	if (!keep_color) {
 		color = brightness * color;
 	}
 	else {

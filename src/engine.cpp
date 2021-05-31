@@ -265,7 +265,7 @@ i32 engine_run(Engine* engine) {
 
 		renderer_bind_fbo(FBO_COLOR);
 
-		render_skybox(CUBE_MAP_SPACE, 0.6f);
+		render_skybox(CUBE_MAP_SPACE, 0.2f);
 
         //engine->scene.lights[monkey_light_index].position = monkey->position;
         printf(
