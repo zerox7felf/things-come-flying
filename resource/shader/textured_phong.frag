@@ -37,6 +37,8 @@ uniform float specular_amp;
 uniform float normal_amp; // Just a flag for if we have a normal map or not.
 uniform float shininess;
 
+uniform mat4 V;
+
 #define MAX_LIGHTS 64
 struct Point_light {
     vec3 position; // position in view space
@@ -76,15 +78,16 @@ void main() {
     vec3 out_rgb = vec3(0,0,0);
     for (int i = 0; i < num_point_lights; i++) {
         Point_light light = point_lights[i];
+        vec3 light_pos = (V * vec4(light.position, 1.0f)).xyz;
 
-        float light_distance = length(light.position - viewspace_position);
+        float light_distance = length(light_pos - viewspace_position);
         float falloff = 1.0f / (1 + light.falloff_linear * light_distance + light.falloff_quadratic * (light_distance * light_distance));
 
-        vec3 light_dir = normalize(light.position - viewspace_position);
+        vec3 light_dir = normalize(light_pos - viewspace_position);
         vec3 reflection = normalize(reflect(-light_dir, interp_surface_normal));
 
         vec3 diffuse = max(dot(interp_surface_normal, light_dir), 0) * frag_diffuse_amp;
-        vec3 specular = vec3(0,0,0); //pow(max(dot(view_dir, reflection), 0), shininess) * frag_specular_amp;
+        vec3 specular = pow(max(dot(view_dir, reflection), 0), shininess) * frag_specular_amp;
         out_rgb += vec3(light.color * falloff * (frag_ambient_amp * light.ambient + diffuse + specular));
     }
 

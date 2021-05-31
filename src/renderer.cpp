@@ -667,6 +667,7 @@ void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* sce
     mat4 PVM = multiply_mat4(projection, VM);
     mat4 VM_normal = transpose(inverse(VM));
 
+	glUniformMatrix4fv(glGetUniformLocation(handle, "V"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "VM"), 1, GL_FALSE, (float*)&VM);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "PVM"), 1, GL_FALSE, (float*)&PVM);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "VM_normal"), 1, GL_FALSE, (float*)&VM_normal);
@@ -702,9 +703,6 @@ void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* sce
     // TODO: this -^ is kinda strange and acts like a flag. normals will never be scaled. better solution?
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
 
-	/*v4 light_position = multiply_mat4_v4(view, V4(0.0f, 0.0f, 0.0f, 1.0f));
-    glUniform3fv(glGetUniformLocation(handle, "light_position"), 1, (float*)&light_position);
-    glUniform3f(glGetUniformLocation(handle, "light_color"), 1.0f, 1.0f, 1.0f);*/
     for (i32 i = 0; i < scene->num_lights; i++) {
         if (i == MAX_LIGHTS) {
             printf("Warning: too many light sources (max: %d).", MAX_LIGHTS);
@@ -712,8 +710,7 @@ void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* sce
         }
         Point_light light = scene->lights[i];
         std::string uniform_name = "point_lights[" + std::to_string(i) + "]";
-	    v4 light_position = multiply_mat4_v4(view, V4(light.position.x, light.position.y, light.position.z, 1.0f));
-        glUniform3fv(glGetUniformLocation(handle, (uniform_name + ".position").c_str()), 1, (float*)&light_position);
+        glUniform3fv(glGetUniformLocation(handle, (uniform_name + ".position").c_str()), 1, (float*)&light.position);
         glUniform3fv(glGetUniformLocation(handle, (uniform_name + ".color").c_str()), 1, (float*)&light.color);
         glUniform1f(glGetUniformLocation(handle, (uniform_name + ".falloff_linear").c_str()), light.falloff_linear);
         glUniform1f(glGetUniformLocation(handle, (uniform_name + ".falloff_quadratic").c_str()), light.falloff_quadratic);

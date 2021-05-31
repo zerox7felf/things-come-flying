@@ -35,21 +35,21 @@ void engine_initialize(Engine* engine) {
 
     Point_light* lights = NULL;
     i32 num_lights = 0;
-    /*Point_light sun_light = (Point_light) {
+    Point_light sun_light = (Point_light) {
         .position = V3(0, 0, 0),
         .color = V3(1, 1, 1),
         .ambient = 1.0f,
         .falloff_linear = 0, //0.022f,
         .falloff_quadratic = 0 //0.0019f,
     };
-    list_push(lights, num_lights, sun_light);*/
+    list_push(lights, num_lights, sun_light);
 
     Point_light monkey_light = (Point_light) {
         .position = V3(0, 0, 0),
-        .color = V3(1, 1, 1),
-        .ambient = 1.0f,
-        .falloff_linear = 0.022f,
-        .falloff_quadratic = 0.0019f
+        .color = V3(0, 0.5f, 0),
+        .ambient = 0.5f,
+        .falloff_linear = 0.7f,
+        .falloff_quadratic = 1.8f
     };
     monkey_light_index = num_lights;
     list_push(lights, num_lights, monkey_light);
@@ -121,6 +121,13 @@ void engine_initialize(Engine* engine) {
 	moon_material.color_map.id = TEXTURE_MOON;
 	entity_attach_material(moon, moon_material);
 
+    monkey = engine_push_empty_entity(engine);
+    entity_initialize(monkey, V3(4.5f, 0, 4.5f), V3(0.25f, 0.25f, 0.25f), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_MONKE, NULL, earth);
+    Material monkey_material = base;
+    monkey_material.color_map.id = TEXTURE_GREEN;
+    monkey_material.ambient.value.constant = 1.0f;
+	entity_attach_material(monkey, monkey_material);
+
 	Entity* alien = engine_push_empty_entity(engine);
 	entity_initialize(alien, V3(35, 0, 30), V3(2, 2, 2), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, sun);
 	alien->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 0.35f;
@@ -129,13 +136,6 @@ void engine_initialize(Engine* engine) {
 	alien_material.ambient.type = VALUE_MAP_MAP;
 	alien_material.color_map.id = TEXTURE_ALIEN;
 	entity_attach_material(alien, alien_material);
-
-    monkey = engine_push_empty_entity(engine);
-    entity_initialize(monkey, V3(32, 0, 33.18f), V3(2.5f, 2.5f, 2.5f), V3(0, 0, 0), V3(0, 0, 0), ENTITY_NONE, MESH_MONKE, NULL, NULL);
-    Material monkey_material = base;
-    monkey_material.color_map.id = TEXTURE_GREEN;
-    monkey_material.ambient.value.constant = 1.0f;
-	entity_attach_material(monkey, monkey_material);
 
     Entity* floor = engine_push_empty_entity(engine);
     entity_initialize(floor, V3(0, -20.0f, 0), V3(10, 10, 10), V3(0, 0, 0), V3(0, 0, 0), ENTITY_NONE, MESH_PLANE, NULL, NULL);
@@ -238,42 +238,12 @@ i32 engine_run(Engine* engine) {
 				target_entity = NULL;
 			}
 		}
-        if (key_pressed[GLFW_KEY_KP_8]) {
-            //monkey->position.x += 1.0f;
-            engine->scene.lights[monkey_light_index].position.x += 1.0f;
-        }
-        if (key_pressed[GLFW_KEY_KP_2]) {
-            //monkey->position.x -= 1.0f;
-            engine->scene.lights[monkey_light_index].position.x -= 1.0f;
-        }
-        if (key_pressed[GLFW_KEY_KP_4]) {
-            //monkey->position.z += 1.0f;
-            engine->scene.lights[monkey_light_index].position.z += 1.0f;
-        }
-        if (key_pressed[GLFW_KEY_KP_6]) {
-            //monkey->position.z -= 1.0f;
-            engine->scene.lights[monkey_light_index].position.z -= 1.0f;
-        }
-        if (key_pressed[GLFW_KEY_KP_7]) {
-            //monkey->position.y += 1.0f;
-            engine->scene.lights[monkey_light_index].position.y += 1.0f;
-        }
-        if (key_pressed[GLFW_KEY_KP_1]) {
-            //monkey->position.y -= 1.0f;
-            engine->scene.lights[monkey_light_index].position.y -= 1.0f;
-        }
 
 		renderer_bind_fbo(FBO_COLOR);
 
 		render_skybox(CUBE_MAP_SPACE, 0.2f);
 
-        //engine->scene.lights[monkey_light_index].position = monkey->position;
-        printf(
-            "Light:\nx:%f,\ny:%f,\nz:%f\n---------\n",
-            engine->scene.lights[monkey_light_index].position.x,
-            engine->scene.lights[monkey_light_index].position.y,
-            engine->scene.lights[monkey_light_index].position.z
-        );
+        engine->scene.lights[monkey_light_index].position = monkey->position;
 		for (u32 entity_index = 0; entity_index < engine->entity_count; ++entity_index) {
 			Entity* entity = &engine->entities[entity_index];
 			entity_update(entity, engine);
