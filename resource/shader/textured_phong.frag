@@ -37,8 +37,16 @@ uniform float specular_amp;
 uniform float normal_amp; // Just a flag for if we have a normal map or not.
 uniform float shininess;
 
-uniform vec3 light_position; // light position in *viewspace* (ofc. since all our shading calcs are done there)
-uniform vec3 light_color;
+#define MAX_LIGHTS 64
+struct Point_light {
+    vec3 position; // position in view space
+    vec3 color;
+    float ambient;
+    float falloff_linear;
+    float falloff_quadratic;
+};
+uniform Point_light point_lights[MAX_LIGHTS];
+uniform int num_point_lights;
 
 void main() {
     vec3 obj_color = texture(color_map, texture_coord + color_map_offset).rgb + (texture_mix * texture(obj_texture1, texture_coord + offset1).rgb);
@@ -64,12 +72,22 @@ void main() {
         interp_surface_normal = normalize(TBN * interp_surface_normal);
     }
 
-    vec3 light_dir = normalize(light_position - viewspace_position);
     vec3 view_dir = normalize(-viewspace_position);
-    vec3 reflection = normalize(reflect(-light_dir, interp_surface_normal));
+    vec3 out_rgb = vec3(0,0,0);
+    for (int i = 0; i < num_point_lights; i++) {
+        Point_light light = point_lights[i];
 
-    vec3 diffuse = max(dot(interp_surface_normal, light_dir), 0) * frag_diffuse_amp;
-    vec3 specular = pow(max(dot(view_dir, reflection), 0), shininess) * frag_specular_amp;
+        float light_distance = length(light.position - viewspace_position);
+        float falloff = 1.0f / (1 + light.falloff_linear * light_distance + light.falloff_quadratic * (light_distance * light_distance));
 
-    out_color = vec4(light_color * (frag_ambient_amp + diffuse + specular), 1);
+        vec3 light_dir = normalize(light.position - viewspace_position);
+        vec3 reflection = normalize(reflect(-light_dir, interp_surface_normal));
+
+        vec3 diffuse = max(dot(interp_surface_normal, light_dir), 0) * frag_diffuse_amp;
+        vec3 specular = vec3(0,0,0); //pow(max(dot(view_dir, reflection), 0), shininess) * frag_specular_amp;
+        out_rgb += vec3(light.color * falloff * (frag_ambient_amp * light.ambient + diffuse + specular));
+    }
+
+    out_color = vec4(out_rgb, 1);
+    //out_color = vec4(light_color * (frag_ambient_amp + diffuse + specular), 1);
 }

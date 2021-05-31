@@ -8,6 +8,7 @@
 #include "resource.hpp"
 #include "matrix_math.hpp"
 #include "entity.hpp"
+#include "renderer.hpp"
 
 #define MAX_ENTITY 128
 
@@ -22,6 +23,7 @@ typedef struct Engine {
 	double scroll_x;
 	double scroll_y;
 	struct Entity entities[MAX_ENTITY];
+    Scene scene;
 	u32 entity_count;
 	u32 target_entity_index;
 } Engine;

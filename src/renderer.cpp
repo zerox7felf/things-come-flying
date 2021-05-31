@@ -1,6 +1,7 @@
 // renderer.cpp
 
 #include <GL/glew.h>
+#include <string>
 
 #if defined(__APPLE__)
 	#include <OpenGL/gl.h>
@@ -638,7 +639,7 @@ void renderer_clear_fbos() {
 	renderer_clear_fbo();	// Clear the normal framebuffer
 }
 
-void render_mesh(mat4 transformation, i32 mesh_id, Material material) {
+void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* scene) {
 	if (mesh_id < 0 || mesh_id >= MAX_MESH) {
 		return;
 	}
@@ -701,9 +702,24 @@ void render_mesh(mat4 transformation, i32 mesh_id, Material material) {
     // TODO: this -^ is kinda strange and acts like a flag. normals will never be scaled. better solution?
 	glUniform1f(glGetUniformLocation(handle, "shininess"), material.shininess);
 
-	v4 light_position = multiply_mat4_v4(view, V4(0.0f, 0.0f, 0.0f, 1.0f));
+	/*v4 light_position = multiply_mat4_v4(view, V4(0.0f, 0.0f, 0.0f, 1.0f));
     glUniform3fv(glGetUniformLocation(handle, "light_position"), 1, (float*)&light_position);
-    glUniform3f(glGetUniformLocation(handle, "light_color"), 1.0f, 1.0f, 1.0f);
+    glUniform3f(glGetUniformLocation(handle, "light_color"), 1.0f, 1.0f, 1.0f);*/
+    for (i32 i = 0; i < scene->num_lights; i++) {
+        if (i == MAX_LIGHTS) {
+            printf("Warning: too many light sources (max: %d).", MAX_LIGHTS);
+            break;
+        }
+        Point_light light = scene->lights[i];
+        std::string uniform_name = "point_lights[" + std::to_string(i) + "]";
+	    v4 light_position = multiply_mat4_v4(view, V4(light.position.x, light.position.y, light.position.z, 1.0f));
+        glUniform3fv(glGetUniformLocation(handle, (uniform_name + ".position").c_str()), 1, (float*)&light_position);
+        glUniform3fv(glGetUniformLocation(handle, (uniform_name + ".color").c_str()), 1, (float*)&light.color);
+        glUniform1f(glGetUniformLocation(handle, (uniform_name + ".falloff_linear").c_str()), light.falloff_linear);
+        glUniform1f(glGetUniformLocation(handle, (uniform_name + ".falloff_quadratic").c_str()), light.falloff_quadratic);
+        glUniform1f(glGetUniformLocation(handle, (uniform_name + ".ambient").c_str()), light.ambient);
+    }
+    glUniform1i(glGetUniformLocation(handle, "num_point_lights"), std::min(scene->num_lights, MAX_LIGHTS));
 
 	glBindVertexArray(mesh->vao);
 

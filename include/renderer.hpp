@@ -104,6 +104,20 @@ typedef struct Render_state {
 	u8 initialized;
 } Render_state;
 
+#define MAX_LIGHTS 64
+typedef struct Point_light {
+    v3 position;
+    v3 color;
+    float ambient;
+    float falloff_linear;
+    float falloff_quadratic;
+} Point_light;
+
+typedef struct Scene {
+    Point_light* lights;
+    i32 num_lights;
+} Scene;
+
 i32 renderer_initialize();
 
 void renderer_framebuffer_callback(i32 width, i32 height);
@@ -122,7 +136,7 @@ void renderer_toggle_post_processing();
 
 void renderer_clear_fbos();
 
-void render_mesh(mat4 translation, i32 mesh_id, Material material);
+void render_mesh(mat4 translation, i32 mesh_id, Material material, Scene* scene);
 
 void render_skybox(u32 skybox_id, float brightness);
 

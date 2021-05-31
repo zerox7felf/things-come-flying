@@ -25,11 +25,16 @@ void entity_attach_material(Entity* entity, Material material) {
 	entity->material = material;
 }
 
+v3 entity_get_worldspace_pos(Entity* entity) {
+}
+
 mat4 entity_get_transform(Entity* entity) {
     mat4 model;
 
     if (entity->parent) {
 	    model = multiply_mat4(entity_get_transform(entity->parent), translate(entity->position));
+    } else if (entity->following) {
+	    model = translate(entity->position);
     } else {
 	    model = translate(entity->position);
     }
@@ -48,19 +53,13 @@ mat4 entity_get_transform(Entity* entity) {
 void entity_update(Entity* entity, Engine* engine) {
 	switch (entity->type) {
 		case ENTITY_PLANET: {
-			const v2 distance = V2(20, 20);
-			v3 following_position = V3(0, 0, 0);
-			if (entity->following) {
-                // TODO: lacks recursion, relies on entities being added in the right order (right?)
-				following_position = entity->following->position;
-			}
-			else {
-				entity->relative_pos = entity->position;
-			}
+			v3 following_position = entity->following ? entity->following->position : V3(0, 0, 0);
+            float distance_factor = 20.0f / (length_v3(entity->relative_pos) + 1);
+            float spin_time = engine->total_time * entity->move_speed * distance_factor;
 			entity->position = following_position + V3(
-                entity->relative_pos.x * cos(engine->total_time * entity->move_speed),
+                entity->relative_pos.x * cos(spin_time),
                 entity->relative_pos.y,
-                entity->relative_pos.z * sin(engine->total_time * entity->move_speed)
+                entity->relative_pos.z * sin(spin_time)
             );
 			entity->rotation = V3(
                 entity->rotation.x,
@@ -72,13 +71,20 @@ void entity_update(Entity* entity, Engine* engine) {
 		case ENTITY_CAMERA_ATTACHER: {
 			break;
 		}
+        case ENTITY_SPIN: {
+			entity->rotation = V3(
+                entity->rotation.x,
+                fmodf(engine->total_time * entity->angular_speed, 360),
+                entity->rotation.x
+            );
+        };
 		default:
 			break;
 	}
 }
 
-void entity_render(Entity* entity) {
+void entity_render(Entity* entity, Scene* scene) {
 	if (entity->mesh_id >= 0) {
-		render_mesh(entity_get_transform(entity), entity->mesh_id, entity->material);
+		render_mesh(entity_get_transform(entity), entity->mesh_id, entity->material, scene);
 	}
 }

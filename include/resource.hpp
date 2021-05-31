@@ -54,6 +54,8 @@ enum Mesh_id {
 	MESH_CUBE,
 	MESH_GUY,
     MESH_MONKE,
+    MESH_MONKE_FLAT,
+    MESH_PLANE,
     MESH_BENT_PLANE,
     MESH_HOUSE,
 

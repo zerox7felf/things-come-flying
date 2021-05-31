@@ -12,6 +12,7 @@ typedef enum Entity_type {
 	ENTITY_NONE = 0,
 	ENTITY_PLANET,
 	ENTITY_CAMERA_ATTACHER,
+    ENTITY_SPIN
 } Entity_type;
 
 typedef struct Entity {
@@ -35,10 +36,12 @@ Entity* entity_initialize(Entity* entity, v3 position, v3 size, v3 rotation, v3 
 
 void entity_attach_material(Entity* entity, Material material);
 
+v3 entity_get_worldspace_pos(Entity* entity);
+
 mat4 entity_get_transform(Entity* entity);
 
 void entity_update(Entity* entity, struct Engine* engine);
 
-void entity_render(Entity* entity);
+void entity_render(Entity* entity, Scene* scene);
 
 #endif

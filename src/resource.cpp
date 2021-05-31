@@ -40,6 +40,8 @@ const char* mesh_path[MAX_MESH] = {
 	"resource/mesh/cube.obj",
 	"resource/mesh/monster.obj",
     "resource/mesh/monke.obj",
+    "resource/mesh/monke_flat.obj",
+    "resource/mesh/plane.obj",
     "resource/mesh/bent_plane.obj",
     "resource/mesh/house.obj"
 };

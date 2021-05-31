@@ -47,23 +47,27 @@ void camera_update(Engine* engine) {
 		camera.yaw += delta_x;
 		camera.pitch += delta_y;
 
+        float current_move_speed = move_speed;
+		if (key_down[GLFW_KEY_LEFT_ALT]) {
+			current_move_speed *= 0.15;
+        }
 		if (key_down[GLFW_KEY_W]) {
-			camera.target_pos = camera.target_pos + camera.forward * engine->delta_time * move_speed;
+			camera.target_pos = camera.target_pos + camera.forward * engine->delta_time * current_move_speed;
 		}
 		if (key_down[GLFW_KEY_S]) {
-			camera.target_pos = camera.target_pos - camera.forward * engine->delta_time * move_speed;
+			camera.target_pos = camera.target_pos - camera.forward * engine->delta_time * current_move_speed;
 		}
 		if (key_down[GLFW_KEY_A]) {
-			camera.target_pos = camera.target_pos - camera.right * engine->delta_time * move_speed;
+			camera.target_pos = camera.target_pos - camera.right * engine->delta_time * current_move_speed;
 		}
 		if (key_down[GLFW_KEY_D]) {
-			camera.target_pos = camera.target_pos + camera.right * engine->delta_time * move_speed;
+			camera.target_pos = camera.target_pos + camera.right * engine->delta_time * current_move_speed;
 		}
 		if (key_down[GLFW_KEY_LEFT_SHIFT]) {
-			camera.target_pos = camera.target_pos + camera.up * engine->delta_time * move_speed;
+			camera.target_pos.y += engine->delta_time * current_move_speed;
         }
 		if (key_down[GLFW_KEY_LEFT_CONTROL]) {
-			camera.target_pos = camera.target_pos - camera.up * engine->delta_time * move_speed;
+			camera.target_pos.y -= engine->delta_time * current_move_speed;
         }
 	}
 	else {

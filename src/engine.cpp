@@ -12,6 +12,8 @@
 #define TITLE_SIZE 128
 
 Engine engine = {};
+i32 monkey_light_index = 0;
+Entity* monkey = NULL;
 
 static void engine_initialize(Engine* engine);
 static i32 engine_run(Engine* engine);
@@ -30,6 +32,32 @@ void engine_initialize(Engine* engine) {
 	engine->entity_count = 0;
 	engine->target_entity_index = 0;
 	camera_initialize(V3(0, 0, -14));
+
+    Point_light* lights = NULL;
+    i32 num_lights = 0;
+    /*Point_light sun_light = (Point_light) {
+        .position = V3(0, 0, 0),
+        .color = V3(1, 1, 1),
+        .ambient = 1.0f,
+        .falloff_linear = 0, //0.022f,
+        .falloff_quadratic = 0 //0.0019f,
+    };
+    list_push(lights, num_lights, sun_light);*/
+
+    Point_light monkey_light = (Point_light) {
+        .position = V3(0, 0, 0),
+        .color = V3(1, 1, 1),
+        .ambient = 1.0f,
+        .falloff_linear = 0.022f,
+        .falloff_quadratic = 0.0019f
+    };
+    monkey_light_index = num_lights;
+    list_push(lights, num_lights, monkey_light);
+
+    engine->scene = (Scene) {
+        .lights = lights,
+        .num_lights = num_lights
+    };
 
 	Material base = (Material) {
 		.ambient = {
@@ -64,7 +92,7 @@ void engine_initialize(Engine* engine) {
 	entity_attach_material(sun, sun_material);
 
 	Entity* earth = engine_push_empty_entity(engine);
-	entity_initialize(earth, V3(15, 0, 14), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, sun);
+	entity_initialize(earth, V3(50, 0, 50), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, sun);
 	Material earth_material = base;
 	earth_material.ambient.value.map.id = TEXTURE_EARTH_NIGHT;
 	earth_material.ambient.type = VALUE_MAP_MAP;
@@ -101,6 +129,21 @@ void engine_initialize(Engine* engine) {
 	alien_material.ambient.type = VALUE_MAP_MAP;
 	alien_material.color_map.id = TEXTURE_ALIEN;
 	entity_attach_material(alien, alien_material);
+
+    monkey = engine_push_empty_entity(engine);
+    entity_initialize(monkey, V3(32, 0, 33.18f), V3(2.5f, 2.5f, 2.5f), V3(0, 0, 0), V3(0, 0, 0), ENTITY_NONE, MESH_MONKE, NULL, NULL);
+    Material monkey_material = base;
+    monkey_material.color_map.id = TEXTURE_GREEN;
+    monkey_material.ambient.value.constant = 1.0f;
+	entity_attach_material(monkey, monkey_material);
+
+    Entity* floor = engine_push_empty_entity(engine);
+    entity_initialize(floor, V3(0, -20.0f, 0), V3(10, 10, 10), V3(0, 0, 0), V3(0, 0, 0), ENTITY_NONE, MESH_PLANE, NULL, NULL);
+    Material floor_material = base;
+    floor_material.color_map.id = TEXTURE_SHINGLES;
+    floor_material.normal.value.map.id = TEXTURE_SHINGLES_NORMAL;
+    floor_material.normal.type = VALUE_MAP_MAP;
+    entity_attach_material(floor, floor_material);
 }
 
 i32 engine_run(Engine* engine) {
@@ -170,9 +213,11 @@ i32 engine_run(Engine* engine) {
 				else {
 					engine->target_entity_index = engine->entity_count - 1;
 				}
+                printf("Now following %d.\n", engine->target_entity_index);
 			}
 			else if (key_pressed[GLFW_KEY_RIGHT]) {
 				engine->target_entity_index = (engine->target_entity_index + 1) % engine->entity_count;
+                printf("Now following %d.\n", engine->target_entity_index);
 			}
 			else if (key_down[GLFW_KEY_UP]) {
 				camera.zoom_target -= 10 * engine->delta_time;
@@ -193,15 +238,46 @@ i32 engine_run(Engine* engine) {
 				target_entity = NULL;
 			}
 		}
+        if (key_pressed[GLFW_KEY_KP_8]) {
+            //monkey->position.x += 1.0f;
+            engine->scene.lights[monkey_light_index].position.x += 1.0f;
+        }
+        if (key_pressed[GLFW_KEY_KP_2]) {
+            //monkey->position.x -= 1.0f;
+            engine->scene.lights[monkey_light_index].position.x -= 1.0f;
+        }
+        if (key_pressed[GLFW_KEY_KP_4]) {
+            //monkey->position.z += 1.0f;
+            engine->scene.lights[monkey_light_index].position.z += 1.0f;
+        }
+        if (key_pressed[GLFW_KEY_KP_6]) {
+            //monkey->position.z -= 1.0f;
+            engine->scene.lights[monkey_light_index].position.z -= 1.0f;
+        }
+        if (key_pressed[GLFW_KEY_KP_7]) {
+            //monkey->position.y += 1.0f;
+            engine->scene.lights[monkey_light_index].position.y += 1.0f;
+        }
+        if (key_pressed[GLFW_KEY_KP_1]) {
+            //monkey->position.y -= 1.0f;
+            engine->scene.lights[monkey_light_index].position.y -= 1.0f;
+        }
 
 		renderer_bind_fbo(FBO_COLOR);
 
 		render_skybox(CUBE_MAP_SPACE, 0.6f);
 
+        //engine->scene.lights[monkey_light_index].position = monkey->position;
+        printf(
+            "Light:\nx:%f,\ny:%f,\nz:%f\n---------\n",
+            engine->scene.lights[monkey_light_index].position.x,
+            engine->scene.lights[monkey_light_index].position.y,
+            engine->scene.lights[monkey_light_index].position.z
+        );
 		for (u32 entity_index = 0; entity_index < engine->entity_count; ++entity_index) {
 			Entity* entity = &engine->entities[entity_index];
 			entity_update(entity, engine);
-			entity_render(entity);
+			entity_render(entity, &engine->scene);
 		}
 
 		if (engine->scroll_y != 0) {
@@ -257,6 +333,7 @@ i32 engine_start() {
 		engine_run(&engine);
 		window_close();
 		renderer_destroy();
+        list_free(engine.scene.lights, engine.scene.num_lights);
 	}
 	assert("memory leak" && (memory_total_allocated() == 0));
 	return result;

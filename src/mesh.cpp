@@ -44,7 +44,7 @@ void mesh_initialize(Mesh* mesh) {
 i32 mesh_sort_indices(Mesh* mesh) {
 	v2* uv = (v2*)m_malloc(sizeof(v2) * mesh->vertex_index_count);
 	u32 uv_count = mesh->vertex_index_count;
-    u8 uv_flags[uv_count] = {0};
+    u8 uv_flags[uv_count] = {0}; // TODO: fix ffs
 
 	v3* normals = (v3*)m_malloc(sizeof(v3) * mesh->vertex_index_count);
 	u32 normal_count = mesh->vertex_index_count;
