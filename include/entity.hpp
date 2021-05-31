@@ -8,20 +8,13 @@
 #define DEFAULT_ENTITY_ANGULAR_SPEED 7.5f
 #define DEFAULT_ENTITY_MOVE_SPEED 0.5f
 
-typedef enum Entity_type {
-	ENTITY_NONE = 0,
-	ENTITY_PLANET,
-	ENTITY_CAMERA_ATTACHER,
-    ENTITY_SPIN
-} Entity_type;
-
 typedef struct Entity {
 	v3 position;
 	v3 relative_pos;
 	v3 size;
 	v3 rotation;
     v3 rotation_pivot;
-	Entity_type type;
+    void (*update)(Entity* entity, struct Engine* engine);
 	float move_speed;
 	float angular_speed;
 	i32 mesh_id;
@@ -32,15 +25,19 @@ typedef struct Entity {
 	Material material;
 } Entity;
 
-Entity* entity_initialize(Entity* entity, v3 position, v3 size, v3 rotation, v3 rotation_pivot, Entity_type type, i32 mesh_id, Entity* parent, Entity* following);
-
-void entity_attach_material(Entity* entity, Material material);
-
-v3 entity_get_worldspace_pos(Entity* entity);
+Entity* entity_initialize(
+    Entity* entity,
+    v3 position,
+    v3 size,
+    v3 rotation,
+    v3 rotation_pivot,
+    void (*update)(Entity* entity, struct Engine* engine),
+    i32 mesh_id,
+    Entity* parent,
+    Entity* following
+);
 
 mat4 entity_get_transform(Entity* entity);
-
-void entity_update(Entity* entity, struct Engine* engine);
 
 void entity_render(Entity* entity, Scene* scene);
 

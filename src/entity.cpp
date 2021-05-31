@@ -6,26 +6,30 @@
 #include "entity.hpp"
 #include "matrix_math.hpp"
 
-Entity* entity_initialize(Entity* entity, v3 position, v3 size, v3 rotation, v3 rotation_pivot, Entity_type type, i32 mesh_id, Entity* parent, Entity* following) {
+Entity* entity_initialize(
+    Entity* entity,
+    v3 position,
+    v3 size,
+    v3 rotation,
+    v3 rotation_pivot,
+    void (*update)(Entity* entity, struct Engine* engine),
+    i32 mesh_id,
+    Entity* parent,
+    Entity* following
+){
 	memset(entity, 0, sizeof(Entity));
 	entity->position = entity->relative_pos = position;
 	entity->size = size;
 	entity->rotation = rotation;
 	entity->rotation_pivot = rotation_pivot;
-	entity->type = type;
+    entity->update = update;
+	//entity->type = type;
 	entity->move_speed = DEFAULT_ENTITY_MOVE_SPEED;
 	entity->angular_speed = DEFAULT_ENTITY_ANGULAR_SPEED;
 	entity->mesh_id = mesh_id;
 	entity->parent = parent;
 	entity->following = following;
 	return entity;
-}
-
-void entity_attach_material(Entity* entity, Material material) {
-	entity->material = material;
-}
-
-v3 entity_get_worldspace_pos(Entity* entity) {
 }
 
 mat4 entity_get_transform(Entity* entity) {
@@ -48,39 +52,6 @@ mat4 entity_get_transform(Entity* entity) {
 	model = multiply_mat4(model, scale_mat4(entity->size));
 
     return model;
-}
-
-void entity_update(Entity* entity, Engine* engine) {
-	switch (entity->type) {
-		case ENTITY_PLANET: {
-			v3 following_position = entity->following ? entity->following->position : V3(0, 0, 0);
-            float distance_factor = 20.0f / (length_v3(entity->relative_pos) + 1);
-            float spin_time = engine->total_time * entity->move_speed * distance_factor;
-			entity->position = following_position + V3(
-                entity->relative_pos.x * cos(spin_time),
-                entity->relative_pos.y,
-                entity->relative_pos.z * sin(spin_time)
-            );
-			entity->rotation = V3(
-                entity->rotation.x,
-                fmodf(engine->total_time * entity->angular_speed, 360),
-                entity->rotation.x
-            );
-			break;
-		}
-		case ENTITY_CAMERA_ATTACHER: {
-			break;
-		}
-        case ENTITY_SPIN: {
-			entity->rotation = V3(
-                entity->rotation.x,
-                fmodf(engine->total_time * entity->angular_speed, 360),
-                entity->rotation.x
-            );
-        };
-		default:
-			break;
-	}
 }
 
 void entity_render(Entity* entity, Scene* scene) {

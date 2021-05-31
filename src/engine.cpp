@@ -12,13 +12,12 @@
 #define TITLE_SIZE 128
 
 Engine engine = {};
-i32 monkey_light_index = 0;
+Point_light* monkey_light = NULL;
 Entity* monkey = NULL;
 
 static void engine_initialize(Engine* engine);
 static i32 engine_run(Engine* engine);
 
-// Entity* entity_initialize(Entity* entity, v3 position, v3 size, v3 rotation, Entity_type type, i32 mesh_id, Entity* parent);
 void engine_initialize(Engine* engine) {
 	engine->is_running = 1;
 	engine->animation_playing = 1;
@@ -31,7 +30,7 @@ void engine_initialize(Engine* engine) {
 	engine->scroll_y = 0;
 	engine->entity_count = 0;
 	engine->target_entity_index = 0;
-	camera_initialize(V3(0, 0, -14));
+	camera_initialize(V3(0, 0, -20));
 
     Point_light* lights = NULL;
     i32 num_lights = 0;
@@ -44,15 +43,15 @@ void engine_initialize(Engine* engine) {
     };
     list_push(lights, num_lights, sun_light);
 
-    Point_light monkey_light = (Point_light) {
+    Point_light monkey_light_data = (Point_light) {
         .position = V3(0, 0, 0),
         .color = V3(0, 0.5f, 0),
         .ambient = 0.5f,
         .falloff_linear = 0.7f,
         .falloff_quadratic = 1.8f
     };
-    monkey_light_index = num_lights;
-    list_push(lights, num_lights, monkey_light);
+    list_push(lights, num_lights, monkey_light_data);
+    monkey_light = &lights[num_lights - 1];
 
     engine->scene = (Scene) {
         .lights = lights,
@@ -61,7 +60,7 @@ void engine_initialize(Engine* engine) {
 
 	Material base = (Material) {
 		.ambient = {
-			.value = { .constant = 0.02f, },
+			.value = { .constant = 0.01f, },
 			.type = VALUE_MAP_CONST,
 		},
 		.diffuse = {
@@ -84,15 +83,55 @@ void engine_initialize(Engine* engine) {
 	};
 
 	Entity* sun = engine_push_empty_entity(engine);
-	entity_initialize(sun, V3(0, 0, 0), V3(4, 4, 4), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, NULL);
+	entity_initialize(
+        sun,
+        V3(0, 0, 0), // Position
+        V3(4, 4, 4), // Scale
+        V3(0, 0, 0), // Rotation
+        V3(0, 0, 0), // Rotation pivot
+        [](Entity* entity, struct Engine* engine){
+			entity->rotation = V3(
+                entity->rotation.x,
+                fmodf(engine->total_time * entity->angular_speed, 360),
+                entity->rotation.x
+            );
+        },
+        MESH_SPHERE,
+        NULL, NULL
+    );
 	sun->move_speed = 0;
 	Material sun_material = base;
 	sun_material.ambient.value.constant = 1.1f;
 	sun_material.color_map.id= TEXTURE_SUN;
-	entity_attach_material(sun, sun_material);
+    sun->material = sun_material;
+
+    auto planet_update = [](Entity* entity, struct Engine* engine){
+        v3 following_position = entity->following ? entity->following->position : V3(0, 0, 0);
+        float distance_factor = 20.0f / (length_v3(entity->relative_pos) + 1);
+        float spin_time = engine->total_time * entity->move_speed * distance_factor;
+        entity->position = following_position + V3(
+            entity->relative_pos.x * cos(spin_time),
+            entity->relative_pos.y,
+            entity->relative_pos.z * sin(spin_time)
+        );
+        entity->rotation = V3(
+            entity->rotation.x,
+            fmodf(engine->total_time * entity->angular_speed, 360),
+            entity->rotation.x
+        );
+    };
 
 	Entity* earth = engine_push_empty_entity(engine);
-	entity_initialize(earth, V3(50, 0, 50), V3(0.75f, 0.75f, 0.75f), V3(20, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, sun);
+	entity_initialize(
+        earth,
+        V3(50, 0, 50),
+        V3(0.75f, 0.75f, 0.75f),
+        V3(20, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
 	Material earth_material = base;
 	earth_material.ambient.value.map.id = TEXTURE_EARTH_NIGHT;
 	earth_material.ambient.type = VALUE_MAP_MAP;
@@ -101,10 +140,19 @@ void engine_initialize(Engine* engine) {
 	earth_material.color_map.id = TEXTURE_EARTH;
 	earth_material.texture1 = { .id = TEXTURE_EARTH_CLOUDS, };	// TODO(lucas): Animate secondary texture in entities
 	earth_material.texture_mix = 1.0f;
-	entity_attach_material(earth, earth_material);
+    earth->material = earth_material;
 
     Entity* house = engine_push_empty_entity(engine);
-    entity_initialize(house, V3(0, 1.05f, 0), V3(.1f,.1f,.1f), V3(0, 0, -75), V3(0, -1.05f, 0), ENTITY_NONE, MESH_HOUSE, earth, NULL);
+    entity_initialize(
+        house,
+        V3(0, 1.05f, 0),
+        V3(.1f,.1f,.1f),
+        V3(0, 0, -75),
+        V3(0, -1.05f, 0),
+        NULL,
+        MESH_HOUSE,
+        earth, NULL
+    );
     Material house_material = base;
     house_material.ambient.value.constant = 0.1f;
     house_material.specular.value.map.id = TEXTURE_HOUSE_SPECULAR;
@@ -112,38 +160,80 @@ void engine_initialize(Engine* engine) {
     house_material.normal.value.map.id = TEXTURE_HOUSE_NORMAL;
     house_material.normal.type = VALUE_MAP_MAP;
     house_material.color_map.id = TEXTURE_HOUSE;
-    entity_attach_material(house, house_material);
+    house->material = house_material;
 
 	Entity* moon = engine_push_empty_entity(engine);
-	entity_initialize(moon, V3(2.2f, 0, 2), V3(0.25f, 0.25f, 0.25f), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, earth);
+	entity_initialize(
+        moon,
+        V3(2.2f, 0, 2),
+        V3(0.25f, 0.25f, 0.25f),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, earth
+    );
 	moon->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 1.45f;
 	Material moon_material = base;
 	moon_material.color_map.id = TEXTURE_MOON;
-	entity_attach_material(moon, moon_material);
+    moon->material = moon_material;
 
     monkey = engine_push_empty_entity(engine);
-    entity_initialize(monkey, V3(4.5f, 0, 4.5f), V3(0.25f, 0.25f, 0.25f), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_MONKE, NULL, earth);
+    entity_initialize(
+        monkey,
+        V3(4.5f, 0, 4.5f),
+        V3(0.25f, 0.25f, 0.25f),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_MONKE,
+        NULL, earth
+    );
     Material monkey_material = base;
     monkey_material.color_map.id = TEXTURE_GREEN;
     monkey_material.ambient.value.constant = 1.0f;
-	entity_attach_material(monkey, monkey_material);
+    monkey->material = monkey_material;
 
 	Entity* alien = engine_push_empty_entity(engine);
-	entity_initialize(alien, V3(35, 0, 30), V3(2, 2, 2), V3(0, 0, 0), V3(0, 0, 0), ENTITY_PLANET, MESH_SPHERE, NULL, sun);
+	entity_initialize(
+        alien,
+        V3(35, 0, 30),
+        V3(2, 2, 2),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
 	alien->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 0.35f;
 	Material alien_material = base;
 	alien_material.ambient.value.map.id = TEXTURE_ALIEN_AMBIENT;
 	alien_material.ambient.type = VALUE_MAP_MAP;
 	alien_material.color_map.id = TEXTURE_ALIEN;
-	entity_attach_material(alien, alien_material);
+    alien->material = alien_material;
 
     Entity* floor = engine_push_empty_entity(engine);
-    entity_initialize(floor, V3(0, -20.0f, 0), V3(10, 10, 10), V3(0, 0, 0), V3(0, 0, 0), ENTITY_NONE, MESH_PLANE, NULL, NULL);
+    entity_initialize(
+        floor,
+        V3(0, -20.0f, 0),
+        V3(10, 10, 10),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        [](Entity* entity, Engine* engine){
+            if (key_pressed[GLFW_KEY_N]) {
+                entity->mesh_id = entity->mesh_id == MESH_PLANE ? -1 : MESH_PLANE; 
+            }
+        },
+        -1, // Do not display until toggled
+        NULL, NULL
+    );
     Material floor_material = base;
     floor_material.color_map.id = TEXTURE_SHINGLES;
     floor_material.normal.value.map.id = TEXTURE_SHINGLES_NORMAL;
     floor_material.normal.type = VALUE_MAP_MAP;
-    entity_attach_material(floor, floor_material);
+    floor_material.specular.value.map.id = TEXTURE_SHINGLES_SPECULAR;
+    floor_material.specular.type = VALUE_MAP_MAP;
+    floor->material = floor_material;
 }
 
 i32 engine_run(Engine* engine) {
@@ -243,10 +333,11 @@ i32 engine_run(Engine* engine) {
 
 		render_skybox(CUBE_MAP_SPACE, 0.2f);
 
-        engine->scene.lights[monkey_light_index].position = monkey->position;
+        monkey_light->position = monkey->position;
 		for (u32 entity_index = 0; entity_index < engine->entity_count; ++entity_index) {
 			Entity* entity = &engine->entities[entity_index];
-			entity_update(entity, engine);
+            if (entity->update != NULL)
+                entity->update(entity, engine);
 			entity_render(entity, &engine->scene);
 		}
 
