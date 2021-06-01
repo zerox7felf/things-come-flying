@@ -140,9 +140,10 @@ void engine_initialize(Engine* engine) {
 	earth_material.color_map.id = TEXTURE_EARTH;
     earth_material.normal.value.map.id = TEXTURE_EARTH_NORMAL;
     earth_material.normal.type = VALUE_MAP_MAP;
-	earth_material.texture1 = { .id = TEXTURE_EARTH_CLOUDS, };	// TODO(lucas): Animate secondary texture in entities
+	earth_material.texture1 = { .id = TEXTURE_EARTH_CLOUDS, };
 	earth_material.texture_mix = 1.0f;
     earth->material = earth_material;
+	earth->animate_texture = 1;	// Animates the secondary texture which in this case is the cloud texture
 
     Entity* house = engine_push_empty_entity(engine);
     entity_initialize(
@@ -346,6 +347,7 @@ i32 engine_run(Engine* engine) {
 			Entity* entity = &engine->entities[entity_index];
             if (entity->update != NULL)
                 entity->update(entity, engine);
+			entity_update(entity, engine);
 			entity_render(entity, &engine->scene);
 		}
 

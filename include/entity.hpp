@@ -20,6 +20,7 @@ typedef struct Entity {
 	i32 mesh_id;
 	struct Entity* parent;      // Adopt parent origin and coordinate system
 	struct Entity* following;   // Simply follow
+	u8 animate_texture;
     // NOTE(linus): are the two fields above fine or do we want another solution (eg. per-property parenting or smthn)?
 
 	Material material;
@@ -38,6 +39,8 @@ Entity* entity_initialize(
 );
 
 mat4 entity_get_transform(Entity* entity);
+
+void entity_update(Entity* entity, Engine* engine);
 
 void entity_render(Entity* entity, Scene* scene);
 
