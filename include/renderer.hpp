@@ -136,8 +136,9 @@ void renderer_toggle_post_processing();
 
 void renderer_clear_fbos();
 
-//void render_flare(Point_light flare_source);
-void render_flare();
+void render_flares(v3 flare_source);
+
+void render_flare(u32 texture_id, float flare_pos, float flare_size, float flare_opacity, v3 flare_source);
 
 void render_mesh(mat4 translation, i32 mesh_id, Material material, Scene* scene);
 

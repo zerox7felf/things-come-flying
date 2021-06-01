@@ -488,7 +488,8 @@ i32 engine_run(Engine* engine) {
 			entity_render(entity, &engine->scene);
 		}
 
-        render_flare();
+        // Flares originating from the sun
+        render_flares(V3(0,0,0));
 
 		if (engine->scroll_y != 0) {
 			camera.zoom_target -= 0.1f * engine->scroll_y;
