@@ -29,6 +29,7 @@ Entity* entity_initialize(
 	entity->mesh_id = mesh_id;
 	entity->parent = parent;
 	entity->following = following;
+	entity->animate_texture = 0;
 	return entity;
 }
 
@@ -52,6 +53,13 @@ mat4 entity_get_transform(Entity* entity) {
 	model = multiply_mat4(model, scale_mat4(entity->size));
 
     return model;
+}
+
+void entity_update(Entity* entity, Engine* engine) {
+	if (entity->animate_texture) {
+		Material* material = &entity->material;
+		material->texture1.offset = V2(engine->total_time * -0.025f, 0);
+	}
 }
 
 void entity_render(Entity* entity, Scene* scene) {

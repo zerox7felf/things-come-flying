@@ -16,3 +16,6 @@ debug:
 
 run:
 	./${BUILD_DIR}/${PROG}
+
+clean:
+	rm -r ${BUILD_DIR}
