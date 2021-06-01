@@ -58,6 +58,7 @@ const char* mesh_path[MAX_MESH] = {
     "resource/mesh/bent_plane.obj",
     "resource/mesh/house.obj",
     "resource/mesh/destroyer.obj",
+    "resource/mesh/saturn_rings.obj",
 };
 
 void resources_initialize(Resources* resources) {

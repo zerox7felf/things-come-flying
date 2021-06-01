@@ -70,6 +70,7 @@ enum Mesh_id {
     MESH_BENT_PLANE,
     MESH_HOUSE,
     MESH_DESTROYER,
+    MESH_SATURN_RINGS,
 
 	MAX_MESH,
 };
