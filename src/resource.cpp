@@ -10,6 +10,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/earth_ambient.png",
 	"resource/texture/earth_specular.png",
 	"resource/texture/earth_nightmap.png",
+	"resource/texture/earth_normal.png",
 	"resource/texture/sun.png",
 	"resource/texture/alien.png",
 	"resource/texture/alien_ambient.png",
@@ -24,6 +25,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/monster.png",
 	"resource/texture/green.png",
 	"resource/texture/white.png",
+	"resource/texture/js2.png",
 };
 
 const char* skybox_path[MAX_SKYBOX] = {
@@ -43,7 +45,8 @@ const char* mesh_path[MAX_MESH] = {
     "resource/mesh/monke_flat.obj",
     "resource/mesh/plane.obj",
     "resource/mesh/bent_plane.obj",
-    "resource/mesh/house.obj"
+    "resource/mesh/house.obj",
+    "resource/mesh/destroyer.obj",
 };
 
 void resources_initialize(Resources* resources) {

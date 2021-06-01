@@ -138,6 +138,8 @@ void engine_initialize(Engine* engine) {
 	earth_material.specular.value.map.id = TEXTURE_EARTH_SPECULAR;
 	earth_material.specular.type = VALUE_MAP_MAP;
 	earth_material.color_map.id = TEXTURE_EARTH;
+    earth_material.normal.value.map.id = TEXTURE_EARTH_NORMAL;
+    earth_material.normal.type = VALUE_MAP_MAP;
 	earth_material.texture1 = { .id = TEXTURE_EARTH_CLOUDS, };	// TODO(lucas): Animate secondary texture in entities
 	earth_material.texture_mix = 1.0f;
     earth->material = earth_material;
@@ -234,6 +236,12 @@ void engine_initialize(Engine* engine) {
     floor_material.specular.value.map.id = TEXTURE_SHINGLES_SPECULAR;
     floor_material.specular.type = VALUE_MAP_MAP;
     floor->material = floor_material;
+
+	Entity* destroyer = engine_push_empty_entity(engine);
+	entity_initialize(destroyer, V3(10, 0, 10), V3(1, 1, 1), V3(0, 0, 0), V3(0, 0, 0), NULL, MESH_DESTROYER, NULL, NULL);
+	Material dest_material = base;
+	dest_material.color_map.id = TEXTURE_JS2;
+	destroyer->material = dest_material;
 }
 
 i32 engine_run(Engine* engine) {

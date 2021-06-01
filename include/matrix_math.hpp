@@ -249,8 +249,7 @@ inline v3 multiply_mat4_v3(mat4 m, v3 a, float* w) {
 	result.x = x * m.elements[0][0] + y * m.elements[1][0] + z * m.elements[2][0] + *w * m.elements[3][0];
 	result.y = x * m.elements[0][1] + y * m.elements[1][1] + z * m.elements[2][1] + *w * m.elements[3][1];
 	result.z = x * m.elements[0][2] + y * m.elements[1][2] + z * m.elements[2][2] + *w * m.elements[3][2];
-	*w =	   x * m.elements[0][3] + y * m.elements[1][3] + z * m.elements[2][3] + *w * m.elements[3][3];
-
+	*w =       x * m.elements[0][3] + y * m.elements[1][3] + z * m.elements[2][3] + *w * m.elements[3][3];
 	return result;
 }
 
