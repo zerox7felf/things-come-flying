@@ -29,6 +29,7 @@ u32 diffuse_shader = 0,
 	texture_shader = 0,
 	combine_shader = 0,
 	blur_shader = 0,
+    flare_shader = 0,
 	brightness_extract_shader = 0;
 
 Model cube_model;
@@ -462,6 +463,7 @@ i32 renderer_initialize() {
 	shader_compile_from_file("resource/shader/texture", &texture_shader);
 	shader_compile_from_file("resource/shader/combine", &combine_shader);
 	shader_compile_from_file("resource/shader/blur", &blur_shader);
+	shader_compile_from_file("resource/shader/flare", &flare_shader);
 	shader_compile_from_file("resource/shader/brightness_extract", &brightness_extract_shader);
 	render_state.use_post_processing = 1;
 	render_state.initialized = 1;
@@ -639,6 +641,42 @@ void renderer_clear_fbos() {
 	renderer_clear_fbo();	// Clear the normal framebuffer
 }
 
+//void render_flare(Point_light flare_source) {
+void render_flare() {
+	Render_state* renderer = &render_state;
+
+	u32 handle = flare_shader;
+
+	glUseProgram(handle);
+	u32 texture0 = renderer->textures[TEXTURE_HOUSE];
+
+	float width = window_width();
+	float height = window_height();
+
+	model = translate(V3(0, 0, 0));
+	model = multiply_mat4(model, scale_mat4(V3(width, height, 1)));
+
+	glUniformMatrix4fv(glGetUniformLocation(handle, "perspective"), 1, GL_FALSE, (float*)&perspective);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "orthogonal"), 1, GL_FALSE, (float*)&ortho_projection);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+
+	glUniform1i(glGetUniformLocation(handle, "flare_texture"), 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(quad_vao);
+
+	glDisable(GL_DEPTH_TEST);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glEnable(GL_DEPTH_TEST);
+
+	glBindVertexArray(0);
+	glDisableVertexAttribArray(0);
+	glUseProgram(0);
+}
+
 void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* scene) {
 	if (mesh_id < 0 || mesh_id >= MAX_MESH) {
 		return;
@@ -798,6 +836,7 @@ void renderer_destroy() {
 	glDeleteShader(texture_shader);
 	glDeleteShader(combine_shader);
 	glDeleteShader(blur_shader);
+	glDeleteShader(flare_shader);
 	glDeleteVertexArrays(1, &quad_vao);
 	glDeleteVertexArrays(1, &quad_vbo);
 

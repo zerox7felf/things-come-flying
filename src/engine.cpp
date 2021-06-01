@@ -341,6 +341,8 @@ i32 engine_run(Engine* engine) {
 			entity_render(entity, &engine->scene);
 		}
 
+        render_flare();
+
 		if (engine->scroll_y != 0) {
 			camera.zoom_target -= 0.1f * engine->scroll_y;
 			camera.zoom_target = clamp(camera.zoom_target, 1.0f, 255.0f);

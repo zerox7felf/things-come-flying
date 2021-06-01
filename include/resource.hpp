@@ -58,6 +58,7 @@ enum Mesh_id {
     MESH_PLANE,
     MESH_BENT_PLANE,
     MESH_HOUSE,
+    MESH_QUAD,
 
 	MAX_MESH,
 };
