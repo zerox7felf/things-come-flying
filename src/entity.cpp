@@ -38,7 +38,6 @@ mat4 entity_get_transform(Entity* entity) {
 
     if (entity->parent) {
 	    model = multiply_mat4(entity_get_transform(entity->parent), translate(entity->position));
-	    model = translate(entity->position);
     } else if (entity->following) {
 	    model = translate(entity->position);
     } else {
