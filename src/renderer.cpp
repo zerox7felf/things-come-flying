@@ -592,8 +592,8 @@ void renderer_post_process() {
 		.shader_id = brightness_extract_shader,
 		{
 			.extract = {
-				.factor = 0.3f,
-				.keep_color = 0,
+				.factor = 0.2f,
+				.keep_color = 1,
 			},
 		}
 	});
@@ -621,7 +621,7 @@ void renderer_post_process() {
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
-				.mix = 0.3f,
+				.mix = 0.2f,
 			},
 		}
 	});

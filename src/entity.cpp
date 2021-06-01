@@ -18,12 +18,12 @@ Entity* entity_initialize(
     Entity* following
 ){
 	memset(entity, 0, sizeof(Entity));
-	entity->position = entity->relative_pos = position;
+	entity->world_position = entity->position = entity->relative_pos = position;
 	entity->size = size;
 	entity->rotation = rotation;
 	entity->rotation_pivot = rotation_pivot;
     entity->update = update;
-	//entity->type = type;
+	// entity->type = type;
 	entity->move_speed = DEFAULT_ENTITY_MOVE_SPEED;
 	entity->angular_speed = DEFAULT_ENTITY_ANGULAR_SPEED;
 	entity->mesh_id = mesh_id;
@@ -38,10 +38,13 @@ mat4 entity_get_transform(Entity* entity) {
 
     if (entity->parent) {
 	    model = multiply_mat4(entity_get_transform(entity->parent), translate(entity->position));
+		entity->world_position = multiply_mat4_v3(model, V3(0, 0, 0));
     } else if (entity->following) {
 	    model = translate(entity->position);
+		entity->world_position = entity->position;
     } else {
 	    model = translate(entity->position);
+		entity->world_position = entity->position;
     }
 
     model = multiply_mat4(model, translate(entity->rotation_pivot));

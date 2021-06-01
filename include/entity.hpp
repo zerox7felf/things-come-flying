@@ -9,6 +9,7 @@
 #define DEFAULT_ENTITY_MOVE_SPEED 0.5f
 
 typedef struct Entity {
+	v3 world_position;
 	v3 position;
 	v3 relative_pos;
 	v3 size;

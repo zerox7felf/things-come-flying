@@ -37,6 +37,6 @@ void write_gaussian_kernel(FILE* fp, float sigma, int count) {
 }
 
 int main(void) {
-	write_gaussian_kernel(stdout, 1.3f, 11);
+	write_gaussian_kernel(stdout, 3.5f, 11);
 	return 0;
 }

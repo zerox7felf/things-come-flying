@@ -328,45 +328,6 @@ void engine_initialize(Engine* engine) {
 	material.color_map.id = TEXTURE_NEPTUNE;
 	neptune->material = material;
 }
-#if 0
-    Entity* house = engine_push_empty_entity(engine);
-    entity_initialize(
-        house,
-        V3(0, 1.05f, 0),
-        V3(.1f,.1f,.1f),
-        V3(0, 0, -75),
-        V3(0, -1.05f, 0),
-        NULL,
-        MESH_HOUSE,
-        earth, NULL
-    );
-    Material house_material = base;
-    house_material.ambient.value.constant = 0.1f;
-    house_material.specular.value.map.id = TEXTURE_HOUSE_SPECULAR;
-    house_material.specular.type = VALUE_MAP_MAP;
-    house_material.normal.value.map.id = TEXTURE_HOUSE_NORMAL;
-    house_material.normal.type = VALUE_MAP_MAP;
-    house_material.color_map.id = TEXTURE_HOUSE;
-    house->material = house_material;
-
-	Entity* alien = engine_push_empty_entity(engine);
-	entity_initialize(
-        alien,
-        V3(35, 0, 30),
-        V3(2, 2, 2),
-        V3(0, 0, 0),
-        V3(0, 0, 0),
-        planet_update,
-        MESH_SPHERE,
-        NULL, sun
-    );
-	alien->move_speed = DEFAULT_ENTITY_MOVE_SPEED * 0.35f;
-	Material alien_material = base;
-	alien_material.ambient.value.map.id = TEXTURE_ALIEN_AMBIENT;
-	alien_material.ambient.type = VALUE_MAP_MAP;
-	alien_material.color_map.id = TEXTURE_ALIEN;
-    alien->material = alien_material;
-#endif
 
     Entity* floor = engine_push_empty_entity(engine);
     entity_initialize(
@@ -391,11 +352,34 @@ void engine_initialize(Engine* engine) {
     floor_material.specular.type = VALUE_MAP_MAP;
     floor->material = floor_material;
 
+
+    auto destroyer_update = [](Entity* entity, struct Engine* engine){
+		entity->position = entity->relative_pos + (V3(0, 0, 1) * (engine->total_time * entity->move_speed));
+    };
+{
 	Entity* destroyer = engine_push_empty_entity(engine);
-	entity_initialize(destroyer, V3(10, 0, 10), V3(1, 1, 1), V3(0, 0, 0), V3(0, 0, 0), NULL, MESH_DESTROYER, NULL, NULL);
+	entity_initialize(destroyer, V3(8.4f, 1, -103), V3(1, 1, 1), V3(0, 0, 0), V3(0, 0, 0), destroyer_update, MESH_DESTROYER, NULL, NULL);
 	Material dest_material = base;
 	dest_material.color_map.id = TEXTURE_JS2;
+	destroyer->move_speed = 1.5f;
 	destroyer->material = dest_material;
+}
+{
+	Entity* destroyer = engine_push_empty_entity(engine);
+	entity_initialize(destroyer, V3(10, 0, -100), V3(1, 1, 1), V3(0, 0, 0), V3(0, 0, 0), destroyer_update, MESH_DESTROYER, NULL, NULL);
+	Material dest_material = base;
+	dest_material.color_map.id = TEXTURE_JS2;
+	destroyer->move_speed = 1.5f;
+	destroyer->material = dest_material;
+}
+{
+	Entity* destroyer = engine_push_empty_entity(engine);
+	entity_initialize(destroyer, V3(11, -0.2, -104), V3(1, 1, 1), V3(0, 0, 0), V3(0, 0, 0), destroyer_update, MESH_DESTROYER, NULL, NULL);
+	Material dest_material = base;
+	dest_material.color_map.id = TEXTURE_JS2;
+	destroyer->move_speed = 1.5f;
+	destroyer->material = dest_material;
+}
 }
 
 i32 engine_run(Engine* engine) {
@@ -513,7 +497,7 @@ i32 engine_run(Engine* engine) {
 
 		if (follow_target && target_entity) {
 			camera.interpolate = 0;
-			camera.target_pos = target_entity->position - camera.forward * camera.zoom;
+			camera.target_pos = target_entity->world_position - camera.forward * camera.zoom;
 		}
 		else {
 			camera.interpolate = 1;

@@ -10,7 +10,11 @@ uniform sampler2D texture0;
 uniform bool vertical;	// Dictates if we should blur vertically or horizontally
 
 // Gaussian kernel is calculated with https://dev.theomader.com/gaussian-kernel-calculator/
-float weights[11] = float[] (1.000000, 0.882497, 0.606531, 0.324652, 0.135335, 0.043937, 0.011109, 0.002187, 0.000335, 0.000040, 0.000004);
+
+// float weights[11] = float[] (1.000000, 0.882497, 0.606531, 0.324652, 0.135335, 0.043937, 0.011109, 0.002187, 0.000335, 0.000040, 0.000004);
+
+// 3.5 sigma
+float weights[11] = float[] (1.000000, 0.960005, 0.849366, 0.692569, 0.520450, 0.360448, 0.230066, 0.135335, 0.073370, 0.036658, 0.016880);
 
 void main() {
 	vec4 color = vec4(0);
