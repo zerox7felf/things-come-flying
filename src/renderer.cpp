@@ -641,25 +641,46 @@ void renderer_clear_fbos() {
 	renderer_clear_fbo();	// Clear the normal framebuffer
 }
 
-//void render_flare(Point_light flare_source) {
-void render_flare() {
+void render_flares(v3 flare_source) {
+    // Six flares, three from the center to the screen towards the light (0,1,2)
+    // and three towards the opposite edge of the screen (-3, -2, -1)
+    float flare_sizes[6]     = {0.75, 0.3, 0.12, 0.25,  0.12,  0.15};
+    float flare_positions[6] = {0.95, 0.6, 0.33, 0.25, -0.25, -0.60};
+    float flare_opacities[6] = {0.75, 0.8, 1.00, 0.85,  0.60,  0.40};
+    i32 flare_textures[6] = {
+        TEXTURE_LENSFLARE_1,
+        TEXTURE_LENSFLARE_3,
+        TEXTURE_LENSFLARE_2,
+        TEXTURE_LENSFLARE_2,
+        TEXTURE_LENSFLARE_2,
+        TEXTURE_LENSFLARE_2,
+    };
+    for (i32 i = 0; i < 6; i++) {
+        render_flare(flare_textures[i], flare_positions[i], flare_sizes[i], flare_opacities[i], flare_source);
+    }
+}
+
+void render_flare(u32 texture_id, float flare_pos, float flare_size, float flare_opacity, v3 flare_source) {
 	Render_state* renderer = &render_state;
 
 	u32 handle = flare_shader;
 
 	glUseProgram(handle);
-	u32 texture0 = renderer->textures[TEXTURE_HOUSE];
+	u32 texture0 = renderer->textures[texture_id];
 
-	float width = window_width();
-	float height = window_height();
+	float width = std::min(window_width(), window_height());
 
-	model = translate(V3(0, 0, 0));
-	model = multiply_mat4(model, scale_mat4(V3(width, height, 1)));
+    model = scale_mat4(V3(width, width, 1)); // Make square
+	model = multiply_mat4(model, translate(V3(0.5f, 0, 0))); // Center
 
-	glUniformMatrix4fv(glGetUniformLocation(handle, "perspective"), 1, GL_FALSE, (float*)&perspective);
+	glUniformMatrix4fv(glGetUniformLocation(handle, "projection"), 1, GL_FALSE, (float*)&projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "orthogonal"), 1, GL_FALSE, (float*)&ortho_projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "view"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "model"), 1, GL_FALSE, (float*)&model);
+	glUniform1f(glGetUniformLocation(handle, "flare_position"), flare_pos);
+	glUniform1f(glGetUniformLocation(handle, "flare_size"), flare_size);
+	glUniform1f(glGetUniformLocation(handle, "flare_opacity_override"), flare_opacity);
+    glUniform3fv(glGetUniformLocation(handle, "flare_source"), 1, (float*)&flare_source);
 
 	glUniform1i(glGetUniformLocation(handle, "flare_texture"), 0);
 	glActiveTexture(GL_TEXTURE0);
@@ -669,8 +690,13 @@ void render_flare() {
 	glBindVertexArray(quad_vao);
 
 	glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
 	glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 
 	glBindVertexArray(0);
 	glDisableVertexAttribArray(0);
