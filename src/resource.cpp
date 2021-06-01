@@ -37,6 +37,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/jupiter.png",
 	"resource/texture/neptune.png",
 	"resource/texture/mercury.png",
+	"resource/texture/uranus.png",
 };
 
 const char* skybox_path[MAX_SKYBOX] = {

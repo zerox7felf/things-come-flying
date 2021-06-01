@@ -86,7 +86,7 @@ void engine_initialize(Engine* engine) {
 	entity_initialize(
         sun,
         V3(0, 0, 0), // Position
-        V3(4, 4, 4), // Scale
+        V3(5, 5, 5), // Scale
         V3(0, 0, 0), // Rotation
         V3(0, 0, 0), // Rotation pivot
         [](Entity* entity, struct Engine* engine){
@@ -121,10 +121,49 @@ void engine_initialize(Engine* engine) {
         );
     };
 
+{
+	Entity* mercury = engine_push_empty_entity(engine);
+	entity_initialize(
+        mercury,
+        V3(8, 0, 8),
+        V3(0.3f, 0.3f, 0.3f),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
+	Material material = base;
+	material.color_map.id = TEXTURE_MERCURY;
+    mercury->material = material;
+}
+
+{
+	Entity* venus = engine_push_empty_entity(engine);
+	entity_initialize(
+        venus,
+        V3(16, 0, 16),
+        V3(0.6f, 0.6f, 0.6f),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
+	Material material = base;
+	material.specular.value.constant = 0.2f;
+	material.specular.type = VALUE_MAP_CONST;
+	material.color_map.id = TEXTURE_VENUS;
+	material.texture1 = { .id = TEXTURE_VENUS_ATMOSPHERE, };
+	material.texture_mix = 0.5f;
+    venus->material = material;
+	venus->animate_texture = 1;
+}
+
 	Entity* earth = engine_push_empty_entity(engine);
 	entity_initialize(
         earth,
-        V3(50, 0, 50),
+        V3(24, 0, 24),
         V3(0.75f, 0.75f, 0.75f),
         V3(20, 0, 0),
         V3(0, 0, 0),
@@ -144,26 +183,6 @@ void engine_initialize(Engine* engine) {
 	earth_material.texture_mix = 1.0f;
     earth->material = earth_material;
 	earth->animate_texture = 1;	// Animates the secondary texture which in this case is the cloud texture
-
-    Entity* house = engine_push_empty_entity(engine);
-    entity_initialize(
-        house,
-        V3(0, 1.05f, 0),
-        V3(.1f,.1f,.1f),
-        V3(0, 0, -75),
-        V3(0, -1.05f, 0),
-        NULL,
-        MESH_HOUSE,
-        earth, NULL
-    );
-    Material house_material = base;
-    house_material.ambient.value.constant = 0.1f;
-    house_material.specular.value.map.id = TEXTURE_HOUSE_SPECULAR;
-    house_material.specular.type = VALUE_MAP_MAP;
-    house_material.normal.value.map.id = TEXTURE_HOUSE_NORMAL;
-    house_material.normal.type = VALUE_MAP_MAP;
-    house_material.color_map.id = TEXTURE_HOUSE;
-    house->material = house_material;
 
 	Entity* moon = engine_push_empty_entity(engine);
 	entity_initialize(
@@ -197,6 +216,139 @@ void engine_initialize(Engine* engine) {
     monkey_material.ambient.value.constant = 1.0f;
     monkey->material = monkey_material;
 
+{
+	Entity* mars = engine_push_empty_entity(engine);
+	entity_initialize(
+        mars,
+        V3(32, 0, 32),
+        V3(0.4f, 0.4f, 0.4f),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
+	Material material = base;
+	material.specular.value.constant = 0.1f;
+	material.specular.type = VALUE_MAP_CONST;
+	material.color_map.id = TEXTURE_MARS;
+	material.texture1 = { .id = TEXTURE_VENUS_ATMOSPHERE, };	// Venus atmosphere on mars actually looks decent :p
+	material.texture_mix = 0.5f;
+    mars->material = material;
+	mars->animate_texture = 1;
+}
+
+{
+	Entity* jupiter = engine_push_empty_entity(engine);
+	entity_initialize(
+        jupiter,
+        V3(40, 0, 40),
+        V3(3, 3, 3),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
+	Material material = base;
+	material.specular.value.constant = 0.1f;
+	material.specular.type = VALUE_MAP_CONST;
+	material.color_map.id = TEXTURE_JUPITER;
+    jupiter->material = material;
+}
+
+	Entity* saturn = engine_push_empty_entity(engine);
+	entity_initialize(
+        saturn,
+        V3(50, 0, 50),
+        V3(2.6f, 2.6f, 2.6f),
+        V3(30, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
+{
+	Material material = base;
+	material.specular.value.constant = 0.1f;
+	material.specular.type = VALUE_MAP_CONST;
+	material.color_map.id = TEXTURE_SATURN;
+    saturn->material = material;
+}
+
+{
+	Entity* saturn_rings = engine_push_empty_entity(engine);
+	entity_initialize(
+        saturn_rings,
+        V3(0, 0, 0),
+        V3(1, 1, 1),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        NULL,
+        MESH_SATURN_RINGS,
+        saturn, NULL
+    );
+	Material material = base;
+	material.color_map.id = TEXTURE_SATURN_RING;
+    saturn_rings->material = material;
+}
+
+{
+	Entity* uranus = engine_push_empty_entity(engine);
+	entity_initialize(
+        uranus,
+        V3(61, 0, 60),
+        V3(1.6f, 1.6f, 1.6f),
+        V3(50, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
+	Material material = base;
+	material.specular.value.constant = 0.1f;
+	material.specular.type = VALUE_MAP_CONST;
+	material.color_map.id = TEXTURE_URANUS;
+    uranus->material = material;
+}
+
+{
+	Entity* neptune = engine_push_empty_entity(engine);
+	entity_initialize(
+        neptune,
+        V3(70, 0, 70),
+        V3(1.5f, 1.5f, 1.5f),
+        V3(0, 0, 0),
+        V3(0, 0, 0),
+        planet_update,
+        MESH_SPHERE,
+        NULL, sun
+    );
+	Material material = base;
+	material.color_map.id = TEXTURE_NEPTUNE;
+	neptune->material = material;
+}
+#if 0
+    Entity* house = engine_push_empty_entity(engine);
+    entity_initialize(
+        house,
+        V3(0, 1.05f, 0),
+        V3(.1f,.1f,.1f),
+        V3(0, 0, -75),
+        V3(0, -1.05f, 0),
+        NULL,
+        MESH_HOUSE,
+        earth, NULL
+    );
+    Material house_material = base;
+    house_material.ambient.value.constant = 0.1f;
+    house_material.specular.value.map.id = TEXTURE_HOUSE_SPECULAR;
+    house_material.specular.type = VALUE_MAP_MAP;
+    house_material.normal.value.map.id = TEXTURE_HOUSE_NORMAL;
+    house_material.normal.type = VALUE_MAP_MAP;
+    house_material.color_map.id = TEXTURE_HOUSE;
+    house->material = house_material;
+
 	Entity* alien = engine_push_empty_entity(engine);
 	entity_initialize(
         alien,
@@ -214,6 +366,7 @@ void engine_initialize(Engine* engine) {
 	alien_material.ambient.type = VALUE_MAP_MAP;
 	alien_material.color_map.id = TEXTURE_ALIEN;
     alien->material = alien_material;
+#endif
 
     Entity* floor = engine_push_empty_entity(engine);
     entity_initialize(

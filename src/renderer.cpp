@@ -654,7 +654,7 @@ void render_flare() {
 	float height = window_height();
 
 	model = translate(V3(0, 0, 0));
-	model = multiply_mat4(model, scale_mat4(V3(width, height, 1)));
+	model = multiply_mat4(model, scale_mat4(V3(1, 1, 1)));
 
 	glUniformMatrix4fv(glGetUniformLocation(handle, "perspective"), 1, GL_FALSE, (float*)&perspective);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "orthogonal"), 1, GL_FALSE, (float*)&ortho_projection);
