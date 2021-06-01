@@ -16,6 +16,6 @@ INC=include
 
 FLAGS=${SRC} -o ${BUILD_DIR}/${PROG} -I${INC} -Wall
 
-O_DEBUG=-Og
+O_DEBUG=-O0 -g
 
 O_RELEASE=-ffast-math -O2
