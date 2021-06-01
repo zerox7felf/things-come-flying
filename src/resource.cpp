@@ -3,6 +3,8 @@
 
 #include "resource.hpp"
 
+// Ugh loading takes ages. We ideally want to have a threaded resource loader, but we ain't got time to implement that.
+// TODO(lucas): Implement threaded resource loader if time is on our side.
 const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/missing.png",
 	"resource/texture/earth_daymap.png",
@@ -26,6 +28,15 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/green.png",
 	"resource/texture/white.png",
 	"resource/texture/js2.png",
+
+	"resource/texture/mars.png",
+	"resource/texture/saturn.png",
+	"resource/texture/saturn_ring.png",
+	"resource/texture/venus.png",
+	"resource/texture/venus_atmosphere.png",
+	"resource/texture/jupiter.png",
+	"resource/texture/neptune.png",
+	"resource/texture/mercury.png",
 };
 
 const char* skybox_path[MAX_SKYBOX] = {
