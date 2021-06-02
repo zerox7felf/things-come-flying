@@ -30,33 +30,7 @@ void engine_initialize(Engine* engine) {
 	engine->scroll_y = 0;
 	engine->entity_count = 0;
 	engine->target_entity_index = 0;
-	camera_initialize(V3(0, 0, -20));
-
-    Point_light* lights = NULL;
-    i32 num_lights = 0;
-    Point_light sun_light = (Point_light) {
-        .position = V3(0, 0, 0),
-        .color = V3(1, 1, 1),
-        .ambient = 1.0f,
-        .falloff_linear = 0, //0.022f,
-        .falloff_quadratic = 0 //0.0019f,
-    };
-    list_push(lights, num_lights, sun_light);
-
-    Point_light monkey_light_data = (Point_light) {
-        .position = V3(0, 0, 0),
-        .color = V3(0, 0.5f, 0),
-        .ambient = 0.5f,
-        .falloff_linear = 0.7f,
-        .falloff_quadratic = 1.8f
-    };
-    list_push(lights, num_lights, monkey_light_data);
-    monkey_light = &lights[num_lights - 1];
-
-    engine->scene = (Scene) {
-        .lights = lights,
-        .num_lights = num_lights
-    };
+	camera_initialize(V3(0, 0, -10));
 
 	Material base = (Material) {
 		.ambient = {
@@ -383,6 +357,32 @@ void engine_initialize(Engine* engine) {
 }
 
 i32 engine_run(Engine* engine) {
+    Point_light* lights = NULL;
+    i32 num_lights = 0;
+    Point_light sun_light = (Point_light) {
+        .position = V3(0, 0, 0),
+        .color = V3(1, 1, 1),
+        .ambient = 1.0f,
+        .falloff_linear = 0, //0.022f,
+        .falloff_quadratic = 0 //0.0019f,
+    };
+    list_push(lights, num_lights, sun_light);
+
+    Point_light monkey_light_data = (Point_light) {
+        .position = V3(0, 0, 0),
+        .color = V3(0, 0.5f, 0),
+        .ambient = 0.5f,
+        .falloff_linear = 0.7f,
+        .falloff_quadratic = 1.8f
+    };
+    list_push(lights, num_lights, monkey_light_data);
+    monkey_light = &lights[num_lights - 1];
+
+    engine->scene = (Scene) {
+        .lights = lights,
+        .num_lights = num_lights
+    };
+
 	struct timeval now = {};
 	struct timeval prev = {};
 	u8 follow_target = 1;
@@ -489,7 +489,7 @@ i32 engine_run(Engine* engine) {
 		}
 
         // Flares originating from the sun
-        render_flares(V3(0,0,0));
+        render_flares(V3(0, 0, 0));
 
 		if (engine->scroll_y != 0) {
 			camera.zoom_target -= 0.1f * engine->scroll_y;

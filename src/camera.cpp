@@ -11,7 +11,7 @@ static double mouse_sensitivity = 0.05;
 static double move_speed = 24;
 static float move_interpolation_speed = 5;
 
-#define camera_zoom_default 6.0f	// Zoom-out factor
+#define camera_zoom_default 20.0f	// Zoom-out factor
 #define camera_zoom_interpolation_speed 10.0f
 
 Camera camera;
