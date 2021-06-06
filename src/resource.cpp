@@ -5,39 +5,21 @@
 
 // Ugh loading takes ages. We ideally want to have a threaded resource loader, but we ain't got time to implement that.
 // TODO(lucas): Implement threaded resource loader if time is on our side.
+const char* shader_path[MAX_SHADER] = {
+	"resource/shader/textured_phong",
+    "resource/shader/skybox",
+	"resource/shader/texture",
+	"resource/shader/combine",
+	"resource/shader/blur",
+	"resource/shader/flare",
+	"resource/shader/brightness_extract",
+};
+
 const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/missing.png",
-	"resource/texture/earth_daymap.png",
-	"resource/texture/earth_clouds.png",
-	"resource/texture/earth_ambient.png",
-	"resource/texture/earth_specular.png",
-	"resource/texture/earth_nightmap.png",
-	"resource/texture/earth_normal.png",
-	"resource/texture/sun.png",
-	"resource/texture/alien.png",
-	"resource/texture/alien_ambient.png",
-	"resource/texture/alien_specular.png",
-	"resource/texture/moon.png",
-	"resource/texture/shingles_diffuse.png",
-	"resource/texture/shingles_specular.png",
-	"resource/texture/shingles_normal.png",
 	"resource/texture/house_diffuse.png",
 	"resource/texture/house_specular.png",
 	"resource/texture/house_normal.png",
-	"resource/texture/monster.png",
-	"resource/texture/green.png",
-	"resource/texture/white.png",
-	"resource/texture/js2.png",
-
-	"resource/texture/mars.png",
-	"resource/texture/saturn.png",
-	"resource/texture/saturn_ring.png",
-	"resource/texture/venus.png",
-	"resource/texture/venus_atmosphere.png",
-	"resource/texture/jupiter.png",
-	"resource/texture/neptune.png",
-	"resource/texture/mercury.png",
-	"resource/texture/uranus.png",
     
 	"resource/texture/lensflare_01.png",
 	"resource/texture/lensflare_02.png",

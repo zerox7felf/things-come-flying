@@ -14,7 +14,7 @@ SRC=${wildcard src/*.cpp}
 
 INC=include
 
-FLAGS=${SRC} -o ${BUILD_DIR}/${PROG} -I${INC} -Wall
+FLAGS=${SRC} -o ${BUILD_DIR}/${PROG} -I${INC} -I/usr/local/include -Wall
 
 O_DEBUG=-O0 -g
 

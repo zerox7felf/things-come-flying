@@ -1,0 +1,32 @@
+Material {
+	ambient    = {.value = {.constant = 0.5f}, .type = VALUE_MAP_CONST},
+	diffuse    = {.value = {.constant = 1.0f}, .type = VALUE_MAP_CONST},
+	specular   = {.value = {.map = {.id = TEXTURE_HOUSE_SPECULAR}}, .type = VALUE_MAP_MAP},
+	normal     = {.value = {.map = {.id = TEXTURE_HOUSE_NORMAL}}, .type = VALUE_MAP_MAP},
+	shininess  = 10.0f,
+	color_map  = {.id = TEXTURE_HOUSE},
+	texture1   = {}, .texture_mix = 0,
+	shader_index = DIFFUSE_SHADER
+
+	id: RequiredName;
+	ambient_amp: float;
+	ambient_map: NameOfMap;
+	diffuse_*
+	specular_*
+	normal_map: either a map name or omitted;
+	shininess: float;
+	color_map: map name;
+	shader: NameOfShader;
+}
+
+Entity {
+    id: AnyNameHere; "must be defined above"
+    pos: 0, 0, 0; "multiline comment"
+    scale: 1, 1, 1;
+    rot: 0, 0, 0;
+    pivot: 0, 0, 0;
+    update: PRESET or omitted;
+    mesh: PRESET;
+    parent: AnyName or omitted;
+    following: AnyName or omitted;
+}

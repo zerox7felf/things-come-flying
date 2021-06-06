@@ -1,0 +1,41 @@
+Material {
+    id: Mat01;
+	ambient_amp: 0;
+	diffuse_amp: 1;
+    specular_map: TEXTURE_HOUSE_SPECULAR;
+	normal_map: TEXTURE_HOUSE_NORMAL;
+	shininess: 10;
+	color_map: TEXTURE_HOUSE_NORMAL;
+	shader: DIFFUSE_SHADER;
+}
+
+
+Entity {
+    id: house;
+    pos: 12, -3.5, 1;
+    rot: 1, 12, 14;
+	update: HOUSE_UPDATE;
+    material: Mat01;
+}
+
+Entity {
+    pos: 0, -26, 0;
+    mesh: MESH_DESTROYER;
+    parent: house;
+}
+
+Material {
+    id: Mat02;
+    ambient_amp: 0.2;
+    shader: DIFFUSE_SHADER;
+}
+
+Entity {pos: 0, 0, 5;   mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: 0, 0, 0;   mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: 0, 0, -5;  mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: 5, 0, 5;   mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: 5, 0, 0;   mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: 5, 0, -5;  mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: -5, 0, 5;  mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: -5, 0, 0;  mesh: MESH_SPHERE; material: Mat02;}
+Entity {pos: -5, 0, -5; mesh: MESH_SPHERE; material: Mat02;}

@@ -50,6 +50,16 @@ struct Point_light {
 uniform Point_light point_lights[MAX_LIGHTS];
 uniform int num_point_lights;
 
+struct Sun_light {
+    vec3 angle; // UN-normalized direction vector, world space
+    vec3 color;
+    float ambient;
+    float falloff_linear;
+    float falloff_quadratic;
+};
+uniform Sun_light sun_lights[MAX_LIGHTS];
+uniform int num_sun_lights;
+
 void main() {
     vec3 obj_color = texture(color_map, texture_coord + color_map_offset).rgb + (texture_mix * texture(obj_texture1, texture_coord + offset1).rgb);
 
@@ -89,6 +99,15 @@ void main() {
         vec3 diffuse = max(dot(interp_surface_normal, light_dir), 0) * frag_diffuse_amp;
         vec3 specular = pow(max(dot(view_dir, reflection), 0), shininess) * frag_specular_amp;
         out_rgb += vec3(light.color * falloff * (frag_ambient_amp * light.ambient + diffuse + specular));
+    }
+    for (int i = 0; i < num_sun_lights; i++) {
+        Sun_light light = sun_lights[i];
+        vec3 light_dir = normalize(V * vec4(-light.angle, 0.0f)).xyz;
+        vec3 reflection = normalize(reflect(-light_dir, interp_surface_normal));
+
+        vec3 diffuse = max(dot(interp_surface_normal, light_dir), 0) * frag_diffuse_amp;
+        vec3 specular = pow(max(dot(view_dir, reflection), 0), shininess) * frag_specular_amp;
+        out_rgb += vec3(light.color * (frag_ambient_amp * light.ambient + diffuse + specular));
     }
 
     out_color = vec4(out_rgb, 1);

@@ -32,8 +32,6 @@ extern Engine engine;
 
 Entity* engine_push_empty_entity(Engine* engine);
 
-Entity* engine_get_target(Engine* engine);
-
 i32 engine_start();
 
 #endif

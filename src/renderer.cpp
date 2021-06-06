@@ -24,13 +24,13 @@ mat4 model;
 
 Render_state render_state = {};
 
-u32 diffuse_shader = 0,
+/*u32 diffuse_shader = 0,
 	skybox_shader = 0,
 	texture_shader = 0,
 	combine_shader = 0,
 	blur_shader = 0,
     flare_shader = 0,
-	brightness_extract_shader = 0;
+	brightness_extract_shader = 0;*/
 
 Model cube_model;
 Fbo* current_fbo = NULL;
@@ -396,8 +396,9 @@ void fbo_unload(Fbo* fbo) {
 void opengl_initialize(Render_state* renderer) {
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+    // Disabled, we want our sprites to work!
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK); 
 	glEnable(GL_DEPTH_TEST);
 	glAlphaFunc(GL_GREATER, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -442,6 +443,11 @@ i32 render_state_initialize(Render_state* renderer) {
 		renderer->model_count++;
 	}
 
+    for (int i = 0; i < MAX_SHADER; i++) {
+        printf("Compiling shader %s...\n", shader_path[i]);
+        shader_compile_from_file(shader_path[i], &renderer->shaders[i]);
+    }
+
 	renderer->fbo_count = 0;
 	upload_model(&cube_model, cube_vertices, ARR_SIZE(cube_vertices));
 	fbos_initialize(renderer, window_width(), window_height());
@@ -458,13 +464,15 @@ i32 renderer_initialize() {
 	model = mat4d(1.0f);
 
 	render_state_initialize(&render_state);
-	shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
+
+	/*shader_compile_from_file("resource/shader/textured_phong", &diffuse_shader);
 	shader_compile_from_file("resource/shader/skybox", &skybox_shader);
 	shader_compile_from_file("resource/shader/texture", &texture_shader);
 	shader_compile_from_file("resource/shader/combine", &combine_shader);
 	shader_compile_from_file("resource/shader/blur", &blur_shader);
 	shader_compile_from_file("resource/shader/flare", &flare_shader);
-	shader_compile_from_file("resource/shader/brightness_extract", &brightness_extract_shader);
+	shader_compile_from_file("resource/shader/brightness_extract", &brightness_extract_shader);*/
+
 	render_state.use_post_processing = 1;
 	render_state.initialized = 1;
 	return 0;
@@ -578,18 +586,18 @@ void renderer_post_process() {
 
 	if (!renderer->use_post_processing) {
 		render_fbo(FBO_COLOR, FBO_STANDARD_FRAMEBUFFER, (Fbo_attributes) {
-			.shader_id = texture_shader,
+			.shader_id = renderer->shaders[TEXTURE_SHADER], //texture_shader,
 			{},
 		});
 		return;
 	}
 
 	render_fbo(FBO_COLOR, FBO_BRIGHTNESS_EXTRACT, (Fbo_attributes) {
-		.shader_id = texture_shader,
+		.shader_id = renderer->shaders[TEXTURE_SHADER], //texture_shader,
 	});
 
 	render_fbo(FBO_BRIGHTNESS_EXTRACT, FBO_V_BLUR, (Fbo_attributes) {
-		.shader_id = brightness_extract_shader,
+		.shader_id = renderer->shaders[BRIGHTNESS_EXTRACT_SHADER], //brightness_extract_shader,
 		{
 			.extract = {
 				.factor = 0.2f,
@@ -599,7 +607,7 @@ void renderer_post_process() {
 	});
 
 	render_fbo(FBO_V_BLUR, FBO_H_BLUR, (Fbo_attributes) {
-		.shader_id = blur_shader,
+		.shader_id = renderer->shaders[BLUR_SHADER], //blur_shader,
 		{
 			.blur = {
 				.vertical = 1,
@@ -608,7 +616,7 @@ void renderer_post_process() {
 	});
 
 	render_fbo(FBO_H_BLUR, FBO_COMBINE, (Fbo_attributes) {
-		.shader_id = blur_shader,
+		.shader_id = renderer->shaders[BLUR_SHADER], //blur_shader,
 		{
 			.blur = {
 				.vertical = 0,
@@ -617,7 +625,7 @@ void renderer_post_process() {
 	});
 
 	render_fbo(FBO_COMBINE, FBO_STANDARD_FRAMEBUFFER, (Fbo_attributes) {
-		.shader_id = combine_shader,
+		.shader_id = renderer->shaders[COMBINE_SHADER], //combine_shader,
 		{
 			.combine = {
 				.texture1 = renderer->fbos[FBO_COLOR].texture,
@@ -663,7 +671,7 @@ void render_flares(v3 flare_source) {
 void render_flare(u32 texture_id, float flare_pos, float flare_size, float flare_opacity, v3 flare_source) {
 	Render_state* renderer = &render_state;
 
-	u32 handle = flare_shader;
+	u32 handle = renderer->shaders[FLARE_SHADER]; //flare_shader;
 
 	glUseProgram(handle);
 	u32 texture0 = renderer->textures[texture_id];
@@ -717,7 +725,8 @@ void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* sce
     u32 normal_map = renderer->textures[material.normal.type == VALUE_MAP_MAP ? material.normal.value.map.id : 0];
 	Model* mesh = &renderer->models[mesh_id];
 
-	u32 handle = diffuse_shader;
+	//u32 handle = renderer->shaders[DIFFUSE_SHADER];
+	u32 handle = renderer->shaders[material.shader_index];
 	glUseProgram(handle);
 
 	/*model = translate(position);
@@ -782,6 +791,22 @@ void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* sce
     }
     glUniform1i(glGetUniformLocation(handle, "num_point_lights"), std::min(scene->num_lights, MAX_LIGHTS));
 
+    for (i32 i = 0; i < scene->num_sun_lights; i++) {
+        if (i == MAX_LIGHTS) {
+            printf("Warning: too many light sources (max: %d).", MAX_LIGHTS);
+            break;
+        }
+        Sun_light light = scene->sun_lights[i];
+        std::string uniform_name = "sun_lights[" + std::to_string(i) + "]";
+
+        glUniform3fv(glGetUniformLocation(handle, (uniform_name + ".angle").c_str()), 1, (float*)&light.angle);
+        glUniform3fv(glGetUniformLocation(handle, (uniform_name + ".color").c_str()), 1, (float*)&light.color);
+        glUniform1f(glGetUniformLocation(handle, (uniform_name + ".falloff_linear").c_str()), light.falloff_linear);
+        glUniform1f(glGetUniformLocation(handle, (uniform_name + ".falloff_quadratic").c_str()), light.falloff_quadratic);
+        glUniform1f(glGetUniformLocation(handle, (uniform_name + ".ambient").c_str()), light.ambient);
+    }
+    glUniform1i(glGetUniformLocation(handle, "num_sun_lights"), std::min(scene->num_sun_lights, MAX_LIGHTS));
+
 	glBindVertexArray(mesh->vao);
 
 	glEnableVertexAttribArray(0);	// vertices
@@ -828,7 +853,7 @@ void render_skybox(u32 skybox_id, float brightness) {
 	Render_state* renderer = &render_state;
 	u32 texture = renderer->cube_maps[skybox_id];
 
-	u32 handle = skybox_shader;
+	u32 handle = renderer->shaders[SKYBOX_SHADER];//skybox_shader;
 	glUseProgram(handle);
 
 	mat4 view_matrix = view;
@@ -857,12 +882,15 @@ void render_skybox(u32 skybox_id, float brightness) {
 void renderer_destroy() {
 	Render_state* renderer = &render_state;
 
-	glDeleteShader(diffuse_shader);
+    for (u32 i = 0; i < MAX_SHADER; i++) {
+        glDeleteShader(renderer->shaders[i]);
+    }
+	/*glDeleteShader(diffuse_shader);
 	glDeleteShader(skybox_shader);
 	glDeleteShader(texture_shader);
 	glDeleteShader(combine_shader);
 	glDeleteShader(blur_shader);
-	glDeleteShader(flare_shader);
+	glDeleteShader(flare_shader);*/
 	glDeleteVertexArrays(1, &quad_vao);
 	glDeleteVertexArrays(1, &quad_vbo);
 

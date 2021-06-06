@@ -21,11 +21,12 @@ typedef struct Entity {
 	i32 mesh_id;
 	struct Entity* parent;      // Adopt parent origin and coordinate system
 	struct Entity* following;   // Simply follow
-	u8 animate_texture;
     // NOTE(linus): are the two fields above fine or do we want another solution (eg. per-property parenting or smthn)?
 
 	Material material;
 } Entity;
+
+typedef void (*Entity_update)(Entity* entity, struct Engine* engine);
 
 Entity* entity_initialize(
     Entity* entity,
@@ -33,7 +34,8 @@ Entity* entity_initialize(
     v3 size,
     v3 rotation,
     v3 rotation_pivot,
-    void (*update)(Entity* entity, struct Engine* engine),
+    //void (*update)(Entity* entity, struct Engine* engine),
+    Entity_update update,
     i32 mesh_id,
     Entity* parent,
     Entity* following

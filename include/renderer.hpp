@@ -50,6 +50,7 @@ typedef struct Material {
     Texture color_map;
     Texture texture1;
     float texture_mix;
+    u32 shader_index; // NOTE: This is not the handle given by opengl, but rather the index as defined in resource.hpp
 } Material;
 
 extern mat4 projection;
@@ -97,6 +98,8 @@ typedef struct Render_state {
 
 	Model models[MAX_MESH];
 	u32 model_count;
+    
+    u32 shaders[MAX_SHADER];
 
 	Resources resources;
 	i32 depth_func;
@@ -113,9 +116,19 @@ typedef struct Point_light {
     float falloff_quadratic;
 } Point_light;
 
+typedef struct Sun_light {
+    v3 angle;
+    v3 color;
+    float ambient;
+    float falloff_linear;
+    float falloff_quadratic;
+} Sun_light;
+
 typedef struct Scene {
     Point_light* lights;
     i32 num_lights;
+    Sun_light* sun_lights;
+    i32 num_sun_lights;
 } Scene;
 
 i32 renderer_initialize();
