@@ -10,11 +10,19 @@
 #include "engine.hpp"
 #include "entity.hpp"
 #include "memory.hpp"
+#include "common.hpp"
+#include "renderer.hpp"
 
 #define SCENE_BUFFER_SIZE 255
 
 u32 col = 0;
 u32 row = 0;
+
+Sun_light* sun_lights;
+i32 num_sun_lights;
+
+Point_light* point_lights;
+i32 num_point_lights;
 
 std::unordered_map<std::string, i32> mesh_names = {
     {"MESH_SPHERE",         MESH_SPHERE},   
@@ -432,10 +440,64 @@ static u8 scene_parse_entity(FILE* fp, Engine* engine) {
     return 0;
 }
 
-static u8 scene_parse_light(FILE* fp, Engine* engine) {
-    return 0; // TODO
+static u8 scene_parse_light_sun(FILE* fp, Engine* engine) {
+    char current = fgetc(fp);
+    char buffer[SCENE_BUFFER_SIZE] = "";
+    u32 buffer_size = 0;
+
+    Sun_light light = {
+        .angle = V3(1, 0, 0),
+        .color = V3(1, 1, 1),
+        .ambient = 1.0f,
+        .falloff_linear = 0,
+        .falloff_quadratic = 0
+    };
+
+    while (current != EOF) {
+        switch (current) {
+            case '\n':
+                row++;
+                col = 0;
+                break;
+            case ' ' :
+            case '\t':
+            case '\r':
+                col++;
+                break;
+            case ':':
+                if (strncmp("angle", buffer, buffer_size) == 0) {
+                    if (!scene_parse_v3(fp, engine, &light.angle)) return 0;
+                } else if (strncmp("color", buffer, buffer_size) == 0) {
+                    if (!scene_parse_v3(fp, engine, &light.color)) return 0;
+                } else if (strncmp("ambient", buffer, buffer_size) == 0) {
+                    if (!scene_parse_float(fp, &light.ambient)) return 0;
+                }
+                buffer_size = 0;
+                break;
+            case '}':
+                if (buffer_size != 0) {
+                    fprintf(stderr, "Unexpected }.\n");
+                    return 0;
+                }
+                list_push(sun_lights, num_sun_lights, light);
+                return 1;
+            default:
+                buffer[buffer_size] = current;
+                buffer_size++;
+                break;
+        }
+        current = fgetc(fp);
+    }
+    fprintf(stderr, "Unexpected EOF while parsing sun light.\n");
+    return 0;
 }
 
+static u8 scene_parse_light_point(FILE* fp, Engine* engine) {
+    //TODO
+    return 0;
+}
+
+//TODO: we leak memory when returning error status
 u8 initialize_scene(Engine* engine, char* scene_path) {
     FILE* fp = fopen(scene_path, "r");
     if (fp == NULL) {
@@ -446,6 +508,11 @@ u8 initialize_scene(Engine* engine, char* scene_path) {
     char current = fgetc(fp);
     char buffer[SCENE_BUFFER_SIZE] = "";
     u32 buffer_size = 0;
+
+    sun_lights = NULL;
+    num_sun_lights = 0;
+    point_lights = NULL;
+    num_point_lights = 0;
 
     while (current != EOF) {
         switch (current) {
@@ -471,8 +538,14 @@ u8 initialize_scene(Engine* engine, char* scene_path) {
                         fclose(fp);
                         return 0;
                     }
-                } else if (strncmp("Light", buffer, buffer_size) == 0) {
-                    if (!scene_parse_light(fp, engine)) {
+                } else if (strncmp("Light_Point", buffer, buffer_size) == 0) {
+                    if (!scene_parse_light_point(fp, engine)) {
+                        scene_print_pos();
+                        fclose(fp);
+                        return 0;
+                    }
+                } else if (strncmp("Light_Sun", buffer, buffer_size) == 0) {
+                    if (!scene_parse_light_sun(fp, engine)) {
                         scene_print_pos();
                         fclose(fp);
                         return 0;
@@ -499,6 +572,13 @@ u8 initialize_scene(Engine* engine, char* scene_path) {
     }
 
     fclose(fp);
+
+    engine->scene = (Scene) {
+        .lights = point_lights,
+        .num_lights = num_point_lights,
+        .sun_lights = sun_lights,
+        .num_sun_lights = num_sun_lights
+    };
 
     // Since we copy material contents over to the entities we can free them now.
     for (const std::pair<std::string, Material*> item : scene_materials) {

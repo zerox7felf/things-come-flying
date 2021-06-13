@@ -36,7 +36,7 @@ i32 engine_run(Engine* engine) {
     if (!initialize_scene(engine, "01.scene")) {
         return Error;
     }
-    Entity* ground = engine_push_empty_entity(engine);
+    /*Entity* ground = engine_push_empty_entity(engine);
     entity_initialize(
         ground,
         V3(0,-5,0), V3(1,1,1),
@@ -74,9 +74,9 @@ i32 engine_run(Engine* engine) {
         .color_map  = {.id = TEXTURE_HOUSE},
         .texture1   = {}, .texture_mix = 0,
         .shader_index = DIFFUSE_SHADER
-    };
+    };*/
 
-    Sun_light* lights = NULL;
+    /*Sun_light* lights = NULL;
     i32 num_lights = 0;
     Sun_light sun_light = (Sun_light) {
         .angle = V3(1, 0, 0),
@@ -92,7 +92,7 @@ i32 engine_run(Engine* engine) {
         .num_lights = 0,
         .sun_lights = lights,
         .num_sun_lights = num_lights
-    };
+    };*/
 
 	struct timeval now = {};
 	struct timeval prev = {};

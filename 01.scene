@@ -9,6 +9,11 @@ Material {
 	shader: DIFFUSE_SHADER;
 }
 
+Light_Sun {
+    angle: 1, -1, 0;
+    color: 1, 1, 1;
+    ambient: 0.2;
+}
 
 Entity {
     id: house;
@@ -28,6 +33,14 @@ Material {
     id: Mat02;
     ambient_amp: 0.2;
     shader: DIFFUSE_SHADER;
+}
+
+Entity {
+    pos: 0, 20, 0;
+    rot: 0, 0, 45;
+    pivot: 0, -20, 0;
+    mesh: MESH_SPHERE;
+    material: Mat02;
 }
 
 Entity {pos: 0, 0, 5;   mesh: MESH_SPHERE; material: Mat02;}
