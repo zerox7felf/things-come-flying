@@ -36,6 +36,8 @@ std::unordered_map<std::string, i32> mesh_names = {
     {"MESH_QUAD",           MESH_QUAD}, 
     {"MESH_DESTROYER",      MESH_DESTROYER}, 
     {"MESH_SATURN_RINGS",   MESH_SATURN_RINGS}, 
+    {"MESH_GROUND01",       MESH_GROUND01}, 
+    {"MESH_GROUND01_WATER", MESH_GROUND01_WATER}, 
 };
 
 static u8 scene_get_mesh_id(char* mesh_name, u32 mesh_name_size, i32* mesh_id){
@@ -52,6 +54,8 @@ std::unordered_map<std::string, u32> texture_names = {
     {"TEXTURE_HOUSE",			TEXTURE_HOUSE},
     {"TEXTURE_HOUSE_SPECULAR",	TEXTURE_HOUSE_SPECULAR},
     {"TEXTURE_HOUSE_NORMAL",	TEXTURE_HOUSE_NORMAL},
+    {"TEXTURE_HOUSE_NORMAL",	TEXTURE_HOUSE_NORMAL},
+    {"TEXTURE_GROUND01",	    TEXTURE_GROUND01},
 };
 
 static u8 scene_get_texture_id(char* texture_name, u32 texture_name_size, u32* texture_id){
@@ -72,6 +76,7 @@ std::unordered_map<std::string, u32> shader_names = {
 	{"BLUR_SHADER",	                BLUR_SHADER},
     {"FLARE_SHADER",                FLARE_SHADER},
 	{"BRIGHTNESS_EXTRACT_SHADER",	BRIGHTNESS_EXTRACT_SHADER},
+	{"GROUND_SHADER",	            GROUND_SHADER},
 };
 
 static u8 scene_get_shader_id(char* shader_name, u32 shader_name_size, u32* shader_id){

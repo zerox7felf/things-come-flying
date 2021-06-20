@@ -13,6 +13,7 @@ const char* shader_path[MAX_SHADER] = {
 	"resource/shader/blur",
 	"resource/shader/flare",
 	"resource/shader/brightness_extract",
+	"resource/shader/ground",
 };
 
 const char* texture_path[MAX_TEXTURE] = {
@@ -20,6 +21,7 @@ const char* texture_path[MAX_TEXTURE] = {
 	"resource/texture/house_diffuse.png",
 	"resource/texture/house_specular.png",
 	"resource/texture/house_normal.png",
+	"resource/texture/ground01.png",
     
 	"resource/texture/lensflare_01.png",
 	"resource/texture/lensflare_02.png",
@@ -46,7 +48,9 @@ const char* mesh_path[MAX_MESH] = {
     "resource/mesh/house.obj",
     "resource/mesh/quad.obj",
     "resource/mesh/destroyer.obj",
-    "resource/mesh/saturn_rings.obj"
+    "resource/mesh/saturn_rings.obj",
+    "resource/mesh/ground01.obj",
+    "resource/mesh/ground01_water.obj"
 };
 
 void resources_initialize(Resources* resources) {

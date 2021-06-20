@@ -740,6 +740,7 @@ void render_mesh(mat4 transformation, i32 mesh_id, Material material, Scene* sce
     mat4 PVM = multiply_mat4(projection, VM);
     mat4 VM_normal = transpose(inverse(VM));
 
+	glUniformMatrix4fv(glGetUniformLocation(handle, "P"), 1, GL_FALSE, (float*)&projection);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "V"), 1, GL_FALSE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "VM"), 1, GL_FALSE, (float*)&VM);
 	glUniformMatrix4fv(glGetUniformLocation(handle, "PVM"), 1, GL_FALSE, (float*)&PVM);

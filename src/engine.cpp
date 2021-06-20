@@ -15,10 +15,10 @@
 Engine engine = {};
 u8 free_mouse = 0;
 
-static void engine_initialize(Engine* engine);
+static void engine_initialize(Engine* engine, u8 refresh_camera = 1);
 static i32 engine_run(Engine* engine);
 
-void engine_initialize(Engine* engine) {
+void engine_initialize(Engine* engine, u8 refresh_camera) {
 	engine->is_running = 1;
 	engine->animation_playing = 1;
 	engine->delta_time = 0;
@@ -29,70 +29,13 @@ void engine_initialize(Engine* engine) {
 	engine->scroll_x = 0;
 	engine->scroll_y = 0;
 	engine->entity_count = 0;
-	camera_initialize(V3(0, 0, -10));
+    if (refresh_camera) camera_initialize(V3(0, 0, -10));
 }
 
 i32 engine_run(Engine* engine) {
     if (!initialize_scene(engine, "01.scene")) {
         return Error;
     }
-    /*Entity* ground = engine_push_empty_entity(engine);
-    entity_initialize(
-        ground,
-        V3(0,-5,0), V3(1,1,1),
-        V3(0,0,0), V3(0,0,0),
-        NULL,
-        MESH_PLANE,
-        NULL, NULL
-    );
-    ground->material = (Material){
-        .ambient    = {.value = {.constant = 0.5f}, .type = VALUE_MAP_CONST},
-        .diffuse    = {.value = {.constant = 1.0f}, .type = VALUE_MAP_CONST},
-        .specular   = {.value = {.constant = 1.0f}, .type = VALUE_MAP_CONST},
-        .normal     = {.value = {.constant = 1.0f}, .type = VALUE_MAP_CONST},
-        .shininess  = 10.0f,
-        .color_map  = {.id = TEXTURE_HOUSE},
-        .texture1   = {}, .texture_mix = 0,
-        .shader_index = DIFFUSE_SHADER
-    };
-
-    Entity* house = engine_push_empty_entity(engine);
-    entity_initialize(
-        house,
-        V3(0,-5,0), V3(1,1,1),
-        V3(0,0,0), V3(0,0,0),
-        NULL,
-        MESH_HOUSE,
-        NULL, NULL
-    );
-    house->material = (Material){
-        .ambient    = {.value = {.constant = 0.5f}, .type = VALUE_MAP_CONST},
-        .diffuse    = {.value = {.constant = 1.0f}, .type = VALUE_MAP_CONST},
-        .specular   = {.value = {.map = {.id = TEXTURE_HOUSE_SPECULAR}}, .type = VALUE_MAP_MAP},
-        .normal     = {.value = {.map = {.id = TEXTURE_HOUSE_NORMAL}}, .type = VALUE_MAP_MAP},
-        .shininess  = 10.0f,
-        .color_map  = {.id = TEXTURE_HOUSE},
-        .texture1   = {}, .texture_mix = 0,
-        .shader_index = DIFFUSE_SHADER
-    };*/
-
-    /*Sun_light* lights = NULL;
-    i32 num_lights = 0;
-    Sun_light sun_light = (Sun_light) {
-        .angle = V3(1, 0, 0),
-        .color = V3(1, 1, 1),
-        .ambient = 1.0f,
-        .falloff_linear = 0,
-        .falloff_quadratic = 0
-    };
-    list_push(lights, num_lights, sun_light);
-
-    engine->scene = (Scene) {
-        .lights = NULL,
-        .num_lights = 0,
-        .sun_lights = lights,
-        .num_sun_lights = num_lights
-    };*/
 
 	struct timeval now = {};
 	struct timeval prev = {};
@@ -103,7 +46,7 @@ i32 engine_run(Engine* engine) {
 		gettimeofday(&now, NULL);
 		engine->delta_time = ((((now.tv_sec - prev.tv_sec) * 1000000.0f) + now.tv_usec) - (prev.tv_usec)) / 1000000.0f;
 		if (engine->delta_time >= MAX_DT) {
-			engine->delta_time = MAX_DT;
+			engine->delta_time = 0.1f;
 		}
 		if (engine->animation_playing) {
 			engine->total_time += engine->delta_time * engine->time_scale;
@@ -135,9 +78,10 @@ i32 engine_run(Engine* engine) {
 			fprintf(stdout, "Reset time scale: %g\n", engine->time_scale);
 		}
 		if (key_pressed[GLFW_KEY_R]) {
-			//engine_initialize(engine);
-			//continue;
             return 2;
+		}
+		if (key_pressed[GLFW_KEY_F]) {
+            return 3;
 		}
 		if (key_pressed[GLFW_KEY_M]) {
 			window_toggle_cursor_visibility();
@@ -200,10 +144,12 @@ i32 engine_start() {
 	if ((result = window_open("Solar System", 800, 600, 0 /* fullscreen */, 0 /* vsync */, renderer_framebuffer_callback)) == NoError) {
         renderer_initialize();
         engine_initialize(&engine);
-        while (engine_run(&engine) == 2) {
+        i32 status = engine_run(&engine);
+        while (status == 2 || status == 3) {
             list_free(engine.scene.lights, engine.scene.num_lights);
             list_free(engine.scene.sun_lights, engine.scene.num_sun_lights);
-            engine_initialize(&engine);
+            engine_initialize(&engine, status == 2);
+            status = engine_run(&engine);
         }
         list_free(engine.scene.lights, engine.scene.num_lights);
         list_free(engine.scene.sun_lights, engine.scene.num_sun_lights);

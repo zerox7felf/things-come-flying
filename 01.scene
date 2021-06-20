@@ -1,54 +1,49 @@
+Light_Sun {
+    angle: 1, -1, 0;
+    color: 1, 1, 1;
+    ambient: 0.1;
+}
+
+Material {
+    id: GroundMat;
+	ambient_amp: 0;
+	diffuse_amp: 1;
+    specular_map: TEXTURE_HOUSE_SPECULAR;
+    specular_amp: 0.35;
+	shininess: 100;
+	color_map: TEXTURE_GROUND01;
+	shader: GROUND_SHADER;
+}
+
+Entity {
+    id: GroundPlane01;
+    material: GroundMat;
+    mesh: MESH_GROUND01;
+}
+
+Entity {
+    id: GroundPlane01Water;
+    material: GroundMat;
+    mesh: MESH_GROUND01_WATER;
+    parent: GroundPlane01;
+    pos: 0, 0, 0;
+}
+
 Material {
     id: Mat01;
-	ambient_amp: 0;
+	ambient_amp: 0.4;
 	diffuse_amp: 1;
     specular_map: TEXTURE_HOUSE_SPECULAR;
 	normal_map: TEXTURE_HOUSE_NORMAL;
 	shininess: 10;
-	color_map: TEXTURE_HOUSE_NORMAL;
-	shader: DIFFUSE_SHADER;
-}
-
-Light_Sun {
-    angle: 1, -1, 0;
-    color: 1, 1, 1;
-    ambient: 0.2;
+	color_map: TEXTURE_HOUSE;
+	shader: GROUND_SHADER;
 }
 
 Entity {
-    id: house;
-    pos: 12, -3.5, 1;
-    rot: 1, 12, 14;
-	update: HOUSE_UPDATE;
+    id: House;
+    rot: -5, 12, 2.5;
+    pos: 15, 5.5, 80;
     material: Mat01;
+    parent: GroundPlane01;
 }
-
-Entity {
-    pos: 0, -26, 0;
-    mesh: MESH_DESTROYER;
-    parent: house;
-}
-
-Material {
-    id: Mat02;
-    ambient_amp: 0.2;
-    shader: DIFFUSE_SHADER;
-}
-
-Entity {
-    pos: 0, 20, 0;
-    rot: 0, 0, 45;
-    pivot: 0, -20, 0;
-    mesh: MESH_SPHERE;
-    material: Mat02;
-}
-
-Entity {pos: 0, 0, 5;   mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: 0, 0, 0;   mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: 0, 0, -5;  mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: 5, 0, 5;   mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: 5, 0, 0;   mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: 5, 0, -5;  mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: -5, 0, 5;  mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: -5, 0, 0;  mesh: MESH_SPHERE; material: Mat02;}
-Entity {pos: -5, 0, -5; mesh: MESH_SPHERE; material: Mat02;}
